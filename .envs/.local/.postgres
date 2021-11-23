@@ -1,0 +1,7 @@
+# PostgreSQL
+# ------------------------------------------------------------------------------
+POSTGRES_HOST=postgres
+POSTGRES_PORT=5432
+POSTGRES_DB=video_downloading_platform
+POSTGRES_USER=bUXBOdEDGthGAiPrYpSbVRCNwqiuQNHN
+POSTGRES_PASSWORD=Tps7mwLG9mH3QpmOISDYBncqZJstzkDgKPLfZeFcMbj28Je39eHzFKiWsyuejtC7
