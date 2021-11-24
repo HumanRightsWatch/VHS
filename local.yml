@@ -11,7 +11,6 @@ services:
       context: .
       dockerfile: ./compose/local/django/Dockerfile
     image: video_downloading_platform_local_django
-#    container_name: django
     depends_on:
       - postgres
       - redis
@@ -45,7 +44,6 @@ services:
       context: .
       dockerfile: ./compose/production/postgres/Dockerfile
     image: video_downloading_platform_production_postgres
-#    container_name: postgres
     volumes:
       - local_postgres_data:/var/lib/postgresql/data:Z
       - local_postgres_data_backups:/backups:z
@@ -67,7 +65,6 @@ services:
 
   docs:
     image: video_downloading_platform_local_docs
-#    container_name: docs
     build:
       context: .
       dockerfile: ./compose/local/docs/Dockerfile
@@ -86,7 +83,6 @@ services:
       context: .
       dockerfile: ./compose/local/node/Dockerfile
     image: video_downloading_platform_local_node
-#    container_name: node
     depends_on:
       - django
     volumes:
