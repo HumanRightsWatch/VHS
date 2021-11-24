@@ -59,7 +59,7 @@ DJANGO_APPS = [
     "django.contrib.sites",
     "django.contrib.messages",
     "django.contrib.staticfiles",
-    # "django.contrib.humanize", # Handy template tags
+    "django.contrib.humanize", # Handy template tags
     "django.contrib.admin",
     "django.forms",
 ]
@@ -75,6 +75,7 @@ THIRD_PARTY_APPS = [
     "markdownify",
     "tinymce",
     "django_q",
+    "minio_storage",
 ]
 
 LOCAL_APPS = [
@@ -161,6 +162,14 @@ STATICFILES_FINDERS = [
 MEDIA_ROOT = str(APPS_DIR / "media")
 # https://docs.djangoproject.com/en/dev/ref/settings/#media-url
 MEDIA_URL = "/media/"
+
+DEFAULT_FILE_STORAGE = "minio_storage.storage.MinioMediaStorage"
+MINIO_STORAGE_ENDPOINT = 'minio:9000'
+MINIO_STORAGE_ACCESS_KEY = env('MINIO_ACCESS_KEY')
+MINIO_STORAGE_SECRET_KEY = env('MINIO_SECRET_KEY')
+MINIO_STORAGE_USE_HTTPS = False
+MINIO_STORAGE_MEDIA_BUCKET_NAME = 'local-media'
+MINIO_STORAGE_AUTO_CREATE_MEDIA_BUCKET = True
 
 # TEMPLATES
 # ------------------------------------------------------------------------------

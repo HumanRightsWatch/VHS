@@ -29,3 +29,4 @@ youtube-dl
 django-markdownify
 django-tinymce
 django-q
+django-minio-storage
