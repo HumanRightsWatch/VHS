@@ -291,5 +291,20 @@ REST_FRAMEWORK = {
 
 # django-cors-headers - https://github.com/adamchainz/django-cors-headers#setup
 CORS_URLS_REGEX = r"^/api/.*$"
-# Your stuff...
-# ------------------------------------------------------------------------------
+
+MARKDOWNIFY_MARKDOWN_EXTENSIONS = ['markdown.extensions.nl2br']
+
+# Django Q
+Q_CLUSTER = {
+    'name': 'Backend',
+    'workers': 4,
+    'recycle': 1,
+    'timeout': None,
+    'compress': True,
+    'save_limit': 25,
+    'max_rss': 1024 * 1024,
+    'queue_limit': 50,
+    'cpu_affinity': 4,
+    'label': 'Django Q',
+    'redis': env("REDIS_URL")
+}

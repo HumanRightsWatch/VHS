@@ -5,7 +5,7 @@ volumes:
   local_postgres_data_backups: {}
 
 services:
-  django:
+  django: &django
     build:
       context: .
       dockerfile: ./compose/local/django/Dockerfile
@@ -13,6 +13,7 @@ services:
 #    container_name: django
     depends_on:
       - postgres
+      - redis
     volumes:
       - .:/app:z
     env_file:
@@ -21,6 +22,20 @@ services:
     ports:
       - "8000:8000"
     command: /start
+
+  redis:
+    image: redis:6
+
+  worker:
+    <<: *django
+    image: video_downloading_platform_local_worker
+    depends_on:
+      - redis
+      - postgres
+    volumes:
+      - .:/app:z
+    ports: []
+    command: /start-worker
 
   postgres:
     build:

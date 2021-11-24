@@ -20,7 +20,7 @@ services:
     command: /start
 
   postgres:
-    build:
+    build: &django
       context: .
       dockerfile: ./compose/production/postgres/Dockerfile
     image: video_downloading_platform_production_postgres
@@ -29,6 +29,14 @@ services:
       - production_postgres_data_backups:/backups:z
     env_file:
       - ./.envs/.production/.postgres
+  worker:
+    <<: *django
+    image: youtube_dl_web_production_worker
+    depends_on:
+      - redis
+      - postgres
+    ports: []
+    command: /start-worker
 
   traefik:
     build:
