@@ -28,11 +28,14 @@ function pathsConfig(appName) {
   this.app = `./${pjson.name}`
   const vendorsRoot = 'node_modules'
 
+
+
   return {
     bootstrapSass: `${vendorsRoot}/bootstrap/scss`,
     vendorsJs: [
       `${vendorsRoot}/@popperjs/core/dist/umd/popper.js`,
       `${vendorsRoot}/bootstrap/dist/js/bootstrap.js`,
+      `${vendorsRoot}/jquery/dist/jquery.js`,
     ],
     app: this.app,
     templates: `${this.app}/templates`,

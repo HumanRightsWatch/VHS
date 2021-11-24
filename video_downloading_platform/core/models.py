@@ -3,6 +3,21 @@ import uuid
 from django.conf import settings
 from django.db import models
 from django.utils.translation import gettext as _
+from django_q.humanhash import HumanHasher
+from django.core.validators import URLValidator
+
+
+def _generate_random_name():
+    hh = HumanHasher()
+    name, _ = hh.uuid()
+    return str(name)
+
+
+def _validate_urls(value):
+    urls = value.splitlines()
+    uv = URLValidator()
+    for url in urls:
+        uv(url)
 
 
 class Batch(models.Model):
@@ -10,6 +25,9 @@ class Batch(models.Model):
     Model representing a download batch. Users can request the download of multiple URLs under the same batch.
     It is useful for both both experience and traceability.
     """
+
+    class Meta:
+        ordering = ['-updated_at']
 
     OPEN = 'OPEN'
     CLOSED = 'CLOSED'
@@ -38,16 +56,20 @@ class Batch(models.Model):
         choices=BATCH_STATUS,
         default=OPEN,
     )
-    name = models.TextField(
+    name = models.CharField(
         max_length=512,
-        help_text=_('Give a meaningful name to your download batch. (Optional)'),
-        null=True,
-        blank=True
+        help_text=_('Give a meaningful name to your download batch.'),
+        default=_generate_random_name
+    )
+    description = models.TextField(
+        help_text=_('Say a bit more about it. (Optional)'),
+        default=_('No description')
     )
     owner = models.ForeignKey(
         settings.AUTH_USER_MODEL,
         on_delete=models.CASCADE,
         help_text=_('Who owns the current download batch.'),
+        related_name='my_batches',
         editable=False
     )
 
@@ -79,6 +101,20 @@ class Batch(models.Model):
             print(e)
         return []
 
+    def __str__(self):
+        return self.name
+
+class BatchRequest(models.Model):
+    class Meta:
+        managed = False
+
+    batch = models.ForeignKey(
+        Batch,
+        on_delete=models.CASCADE,
+    )
+    urls = models.TextField(
+        validators=[_validate_urls]
+    )
 
 class DownloadRequest(models.Model):
     CREATED = 'CREATED'
@@ -145,7 +181,6 @@ class DownloadRequest(models.Model):
     batch = models.ForeignKey(
         Batch,
         on_delete=models.CASCADE,
-        editable=False,
         related_name='download_requests'
     )
 
@@ -163,8 +198,11 @@ class DownloadRequest(models.Model):
             print(e)
         return []
 
+    def __str__(self):
+        return f'{self.owner} - {self.url}'
 
-class DownloadedContent(models.Model):
+
+class DownloadReport(models.Model):
     id = models.UUIDField(
         primary_key=True,
         default=uuid.uuid4,
@@ -184,7 +222,51 @@ class DownloadedContent(models.Model):
         default=False,
         editable=False
     )
+    error_message = models.TextField(
+        null=True,
+        blank=True
+    )
+    download_request = models.ForeignKey(
+        DownloadRequest,
+        on_delete=models.CASCADE,
+        related_name='report'
+    )
+    owner = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        help_text=_('Who owns the current download request.'),
+        editable=False
+    )
+
+
+class DownloadedContent(models.Model):
+    id = models.UUIDField(
+        primary_key=True,
+        default=uuid.uuid4,
+        help_text=_('Unique identifier of the current downloaded content.'),
+        editable=False
+    )
+    created_at = models.DateTimeField(
+        auto_now_add=True,
+        help_text=_('Creation date of the current downloaded content.'),
+        editable=False
+    )
+    updated_at = models.DateTimeField(
+        help_text=_('Latest modification of the current downloaded content.'),
+        auto_now=True
+    )
+    sha256 = models.CharField(
+        max_length=64,
+    )
     content = models.FileField(
+        null=True,
+        blank=True
+    )
+    metadata = models.JSONField(
+        null=True,
+        blank=True
+    )
+    post_processing_result = models.JSONField(
         null=True,
         blank=True
     )

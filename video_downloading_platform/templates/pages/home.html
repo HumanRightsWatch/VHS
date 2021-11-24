@@ -1,1 +1,64 @@
 {% extends "base.html" %}
+{% load crispy_forms_tags %}
+{% load humanize %}
+
+{% block content %}
+  <div class="row">
+    <div class="col-md-7">
+      <h2>My downloads</h2>
+      <form method="post">
+        {% csrf_token %}
+        {{ dl_request_form|crispy }}
+        <input type="submit" name="request_download" value="Save">
+      </form>
+
+    </div>
+    <div class="col-md-5">
+      <h2>My batches</h2>
+      <form method="post">
+        {% csrf_token %}
+        {{ batch_form|crispy }}
+        <input type="submit" name="save_batch" value="Save">
+      </form>
+
+      <hr>
+
+      <div class="list-group" id="batch-list">
+        {% for batch in users_batches %}
+          <a href="#" class="list-group-item list-group-item-action" aria-current="true" id="{{ batch.id }}">
+            <div class="d-flex justify-content-between">
+              <h5 class="mb-1">{{ batch.name }}</h5>
+              <span class="badge bg-secondary">{{ batch.download_requests.count }}</span>
+            </div>
+            {#            <p class="mb-1">{{ batch.description }}</p>#}
+            <small class="small">Updated {{ batch.updated_at|naturaltime }}</small>
+            <div>
+              <form method="post">
+                {% csrf_token %}
+                <input type="hidden" name="batch_id" value="{{ batch.id }}">
+                <input type="submit" name="close_batch" value="Close">
+              </form>
+            </div>
+
+          </a>
+        {% endfor %}
+      </div>
+    </div>
+  </div>
+
+{% endblock content %}
+
+{% block inline_javascript %}
+  <script>
+    window.addEventListener('DOMContentLoaded', () => {
+      const batch_list = $('#batch-list > a').click(function () {
+        const context = $(this);
+        const id = context.attr('id');
+        $('#batch-list > a').removeClass('active')
+        context.addClass('active');
+        $('#id_batch').val(id).change();
+      });
+      console.dir(batch_list)
+    });
+  </script>
+{% endblock inline_javascript %}
