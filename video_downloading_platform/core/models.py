@@ -79,6 +79,7 @@ class Batch(models.Model):
             print(e)
         return []
 
+
 class DownloadRequest(models.Model):
     CREATED = 'CREATED'
     ENQUEUED = 'ENQUEUED'
