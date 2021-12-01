@@ -2,9 +2,11 @@ import uuid
 
 from django.conf import settings
 from django.db import models
+from django.urls import reverse_lazy
 from django.utils.translation import gettext as _
 from django_q.humanhash import HumanHasher
 from django.core.validators import URLValidator
+from django_q.tasks import async_task
 
 
 def _generate_random_name():
@@ -17,7 +19,9 @@ def _validate_urls(value):
     urls = value.splitlines()
     uv = URLValidator()
     for url in urls:
-        uv(url)
+        striped_url = url.strip()
+        if len(striped_url) > 0:
+            uv(url)
 
 
 class Batch(models.Model):
@@ -31,9 +35,11 @@ class Batch(models.Model):
 
     OPEN = 'OPEN'
     CLOSED = 'CLOSED'
+    ARCHIVED = 'ARCHIVED'
     BATCH_STATUS = [
         (OPEN, _('Open')),
-        (CLOSED, _('Closed'))
+        (CLOSED, _('Closed')),
+        (ARCHIVED, _('Archived')),
     ]
 
     id = models.UUIDField(
@@ -77,8 +83,19 @@ class Batch(models.Model):
         self.status = Batch.CLOSED
         self.save()
 
+    def archive(self):
+        self.status = Batch.ARCHIVED
+        for download_request in self.download_requests.all():
+            for report in download_request.report.all():
+                for downloaded_content in report.downloadedcontent_set.all():
+                    print('>>>', hasattr(downloaded_content, 'content'))
+                    print('>>>', hasattr(downloaded_content.content, 'file'))
+                    if downloaded_content.content:
+                        downloaded_content.content.delete()
+        self.save()
+
     def start(self):
-        for download_request in self.download_requests.filter(status=DownloadRequest.CREATED):
+        for download_request in self.download_requests.filter(status=DownloadRequest.Status.CREATED):
             download_request.start()
 
     def start_and_close(self):
@@ -91,18 +108,31 @@ class Batch(models.Model):
             return Batch.objects.filter(owner=user)
         except Exception as e:
             print(e)
-        return []
+        return None
 
     @staticmethod
     def get_users_open_batches(user):
+        return Batch._get_users_batches(user, Batch.OPEN)
+
+    @staticmethod
+    def get_users_closed_batches(user):
+        return Batch._get_users_batches(user, Batch.CLOSED)
+
+    @staticmethod
+    def get_users_archived_batches(user):
+        return Batch._get_users_batches(user, Batch.ARCHIVED)
+
+    @staticmethod
+    def _get_users_batches(user, status):
         try:
-            return Batch.objects.filter(owner=user, status=Batch.OPEN)
+            return Batch.objects.filter(owner=user, status=status)
         except Exception as e:
             print(e)
-        return []
+        return None
 
     def __str__(self):
         return self.name
+
 
 class BatchRequest(models.Model):
     class Meta:
@@ -110,29 +140,25 @@ class BatchRequest(models.Model):
 
     batch = models.ForeignKey(
         Batch,
-        on_delete=models.CASCADE,
+        on_delete=models.DO_NOTHING,
+        null=True,
+        blank=True
     )
     urls = models.TextField(
+        help_text=_('One URL per line'),
         validators=[_validate_urls]
     )
 
+
 class DownloadRequest(models.Model):
-    CREATED = 'CREATED'
-    ENQUEUED = 'ENQUEUED'
-    PROCESSING = 'PROCESSING'
-    POST_PROCESSING = 'POST_PROCESSING'
-    SUCCEEDED = 'SUCCEEDED'
-    CANCELLED = 'CANCELLED'
-    FAILED = 'FAILED'
-    DOWNLOAD_REQUEST_STATUS = [
-        (CREATED, _('Created')),
-        (ENQUEUED, _('Enqueued')),
-        (PROCESSING, _('Processing')),
-        (POST_PROCESSING, _('Post processing')),
-        (SUCCEEDED, _('Succeeded')),
-        (CANCELLED, _('Cancelled')),
-        (FAILED, _('Failed')),
-    ]
+    class Status(models.TextChoices):
+        CREATED = 'CREATED', _('Created')
+        ENQUEUED = 'ENQUEUED', _('Enqueued')
+        PROCESSING = 'PROCESSING', _('Processing')
+        POST_PROCESSING = 'POST_PROCESSING', _('Post processing')
+        SUCCEEDED = 'SUCCEEDED', _('Succeeded')
+        CANCELLED = 'CANCELLED', _('Cancelled')
+        FAILED = 'FAILED', _('Failed')
 
     VIDEO = 'VIDEO'
     AUDIO = 'AUDIO'
@@ -160,14 +186,18 @@ class DownloadRequest(models.Model):
     )
     status = models.CharField(
         max_length=16,
-        choices=DOWNLOAD_REQUEST_STATUS,
-        default=CREATED,
+        choices=Status.choices,
+        default=Status.CREATED,
     )
     type = models.CharField(
         max_length=16,
         choices=REQUEST_TYPE,
         default=VIDEO,
         editable=False
+    )
+    message = models.TextField(
+        null=True,
+        blank=True
     )
     url = models.URLField(
         help_text=_('The URL of the video to download.')
@@ -185,10 +215,11 @@ class DownloadRequest(models.Model):
     )
 
     def start(self):
-        self.status = DownloadRequest.ENQUEUED
+        from video_downloading_platform.core.tasks import run_download_request
+        self.status = DownloadRequest.Status.ENQUEUED
         self.save()
-        # Start the downloading task
-        pass
+        run_download_request(self.id)
+        # async_task(run_download_request, self.id)
 
     @staticmethod
     def get_users_requests(user):
@@ -196,7 +227,7 @@ class DownloadRequest(models.Model):
             return DownloadRequest.objects.filter(owner=user)
         except Exception as e:
             print(e)
-        return []
+        return None
 
     def __str__(self):
         return f'{self.owner} - {self.url}'
@@ -238,6 +269,23 @@ class DownloadReport(models.Model):
         editable=False
     )
 
+    def get_thumbnail(self):
+        try:
+            content = self.downloadedcontent_set.filter(mime_type='image/jpeg').first()
+            if content:
+                url = reverse_lazy("get_downloaded_file", kwargs={'content_id': content.id})
+                return url
+        except Exception as e:
+            print(e)
+        return None
+
+
+
+def _get_upload_dir(instance, filename):
+    owner_id = instance.owner.id
+    download_request_id = instance.download_report.download_request.id
+    return f'{owner_id}/{download_request_id}/{instance.id}'
+
 
 class DownloadedContent(models.Model):
     id = models.UUIDField(
@@ -258,7 +306,15 @@ class DownloadedContent(models.Model):
     sha256 = models.CharField(
         max_length=64,
     )
+    mime_type = models.CharField(
+        max_length=64,
+    )
+    name = models.CharField(
+        max_length=512,
+    )
     content = models.FileField(
+        upload_to=_get_upload_dir,
+        max_length=512,
         null=True,
         blank=True
     )
@@ -269,6 +325,11 @@ class DownloadedContent(models.Model):
     post_processing_result = models.JSONField(
         null=True,
         blank=True
+    )
+    download_report = models.ForeignKey(
+        DownloadReport,
+        on_delete=models.CASCADE,
+        editable=False
     )
     owner = models.ForeignKey(
         settings.AUTH_USER_MODEL,
@@ -283,4 +344,4 @@ class DownloadedContent(models.Model):
             return DownloadedContent.objects.filter(owner=user)
         except Exception as e:
             print(e)
-        return []
+        return None

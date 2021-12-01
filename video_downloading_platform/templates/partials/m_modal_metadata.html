@@ -1,0 +1,25 @@
+{% load i18n %}
+
+<div class="modal fade" id="metadataModal-{{ id }}" tabindex="-1"
+     aria-labelledby="metadataModalLabel-{{ id }}"
+     aria-hidden="true">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="metadataModalLabel-{{ id }}">Metadata</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body small">
+        <dl class="row">
+          {% for key, value in metadata.items %}
+            <dt class="col-sm-3">{{ key }}</dt>
+            <dd class="col-sm-9"><samp>{{ value }}</samp></dd>
+          {% endfor %}
+        </dl>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">{% translate "Close" %}</button>
+      </div>
+    </div>
+  </div>
+</div>

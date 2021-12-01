@@ -1,0 +1,68 @@
+{% load humanize %}
+{% load i18n %}
+
+{% for request in batch.download_requests.all %}
+  {% with in_error=request.report.first.in_error %}
+    <div class="col-md-12 mb-4">
+    <div class="card">
+      {% if in_error %}
+        <div class="card-header bg-danger bg-opacity-25">
+      {% else %}
+        <div class="card-header bg-success bg-opacity-25">
+      {% endif %}
+      <samp>{{ request.url }}</samp>
+      </div>
+      <div class="card-body">
+        <div class="row">
+          <div class="col">
+            <p>
+              {% translate "Creation date:" %} {{ request.created_at }}
+            </p>
+            {% if in_error %}
+              <p>
+                <a href="#" data-bs-toggle="modal" data-bs-target="#errorModal-{{ request.id }}">
+                  {% translate "See error log" %}
+                </a>
+              </p>
+              {% include "partials/m_modal_error.html" with id=request.id error_message=request.report.first.error_message %}
+            {% endif %}
+            <span>{% translate "Downloaded content:" %}</span>
+            <ul>
+              {% for content in request.report.first.downloadedcontent_set.all %}
+                <li>
+                  {% if batch_status == "ARCHIVED" %}
+                    {{ content.name }}
+                  {% else %}
+                    <a href="{% url "get_downloaded_content" content.id %}" target="_blank">
+                      {{ content.name }}
+                    </a>
+                    ({{ content.content.size|filesizeformat }})
+                  {% endif %}
+                    {% if content.metadata %}
+                      <a href="#" data-bs-toggle="modal" data-bs-target="#metadataModal-{{ request.id }}">
+                        {% translate "View metadata" %}
+                      </a>
+                      {% include "partials/m_modal_metadata.html" with id=request.id metadata=content.metadata %}
+                    {% endif %}
+                </li>
+              {% empty %}
+                <li>{% translate "nothing :(" %}</li>
+              {% endfor %}
+            </ul>
+          </div>
+          {% with thumbnail=request.report.first.get_thumbnail %}
+            {% if thumbnail and batch_status != "ARCHIVED" %}
+              <div class="col-md-2">
+                <img src="{{ thumbnail }}" class="img-fluid rounded-start" alt="...">
+              </div>
+            {% endif %}
+          {% endwith %}
+        </div>
+      </div>
+      <div class="card-footer">
+        {% translate "Status:" %} {{ request.get_status_display }}
+      </div>
+      </div>
+    </div>
+  {% endwith %}
+{% endfor %}

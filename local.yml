@@ -57,40 +57,42 @@ services:
     env_file:
       - ./.envs/.local/.django
     command: server /data
+    ports:
+      - "9000:9000"
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:9000/minio/health/live"]
       interval: 30s
       timeout: 20s
       retries: 3
 
-  docs:
-    image: video_downloading_platform_local_docs
-    build:
-      context: .
-      dockerfile: ./compose/local/docs/Dockerfile
-    env_file:
-      - ./.envs/.local/.django
-    volumes:
-      - ./docs:/docs:z
-      - ./config:/app/config:z
-      - ./video_downloading_platform:/app/video_downloading_platform:z
-    ports:
-      - "7000:7000"
-    command: /start-docs
-
-  node:
-    build:
-      context: .
-      dockerfile: ./compose/local/node/Dockerfile
-    image: video_downloading_platform_local_node
-    depends_on:
-      - django
-    volumes:
-      - .:/app:z
-      # http://jdlm.info/articles/2016/03/06/lessons-building-node-app-docker.html
-      - /app/node_modules
-    command: npm run dev
-    ports:
-      - "3000:3000"
-      # Expose browsersync UI: https://www.browsersync.io/docs/options/#option-ui
-      - "3001:3001"
+#  docs:
+#    image: video_downloading_platform_local_docs
+#    build:
+#      context: .
+#      dockerfile: ./compose/local/docs/Dockerfile
+#    env_file:
+#      - ./.envs/.local/.django
+#    volumes:
+#      - ./docs:/docs:z
+#      - ./config:/app/config:z
+#      - ./video_downloading_platform:/app/video_downloading_platform:z
+#    ports:
+#      - "7000:7000"
+#    command: /start-docs
+#
+#  node:
+#    build:
+#      context: .
+#      dockerfile: ./compose/local/node/Dockerfile
+#    image: video_downloading_platform_local_node
+#    depends_on:
+#      - django
+#    volumes:
+#      - .:/app:z
+#      # http://jdlm.info/articles/2016/03/06/lessons-building-node-app-docker.html
+#      - /app/node_modules
+#    command: npm run dev
+#    ports:
+#      - "3000:3000"
+#      # Expose browsersync UI: https://www.browsersync.io/docs/options/#option-ui
+#      - "3001:3001"

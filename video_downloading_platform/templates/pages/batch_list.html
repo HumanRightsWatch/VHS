@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+{% load crispy_forms_tags %}
+{% load humanize %}
+{% load i18n %}
+
+{% block content %}
+  <div class="row">
+    <div class="col-md-12">
+      <h1>{% translate "My batches" %}</h1>
+    </div>
+  </div>
+  <div class="row">
+    <h2>{% translate "Opened batches" %}</h2>
+    {% for batch in opened %}
+      {% include "partials/m_batch.html" %}
+    {% endfor %}
+  </div>
+  <div class="row">
+    <h2>{% translate "Closed batches" %}</h2>
+    {% for batch in closed %}
+      {% include "partials/m_batch.html" %}
+    {% endfor %}
+  </div>
+  <div class="row">
+    <h2>{% translate "Archived batches" %}</h2>
+    {% for batch in archived %}
+      {% include "partials/m_batch.html" %}
+    {% endfor %}
+  </div>
+{% endblock content %}

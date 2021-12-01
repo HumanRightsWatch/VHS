@@ -1,0 +1,21 @@
+{% extends "base.html" %}
+{% load crispy_forms_tags %}
+{% load humanize %}
+{% load i18n %}
+
+{% block content %}
+  {% if batch %}
+    <div class="row">
+      <div class="col-md-12">
+        <h1>{{ batch.name }}</h1>
+        <span>{% translate "Creation date:" %} {{ batch.created_at }}</span>
+        <p class="text-muted">
+          {{ batch.description }}
+        </p>
+      </div>
+    </div>
+    <div class="row">
+      {% include "partials/m_batch_details.html" with batch_status=batch.status %}
+    </div>
+  {% endif %}
+{% endblock content %}

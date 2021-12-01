@@ -6,20 +6,33 @@ from django.views import defaults as default_views
 from django.views.generic import TemplateView
 from rest_framework.authtoken.views import obtain_auth_token
 
-from video_downloading_platform.core.views import home_view
+from video_downloading_platform.core.views import (
+    home_view,
+    close_batch_view,
+    batch_details_view,
+    get_downloaded_content_view,
+    my_batches_view,
+    get_downloaded_file_view, archive_batch_view,
+)
 
 urlpatterns = [
-    path("", home_view, name="home"),
-    path(
-        "about/", TemplateView.as_view(template_name="pages/about.html"), name="about"
-    ),
-    # Django Admin, use {% url 'admin:index' %}
-    path(settings.ADMIN_URL, admin.site.urls),
-    # User management
-    path("users/", include("video_downloading_platform.users.urls", namespace="users")),
-    path("accounts/", include("allauth.urls")),
-    # Your stuff: custom urls includes go here
-] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+                  path("", home_view, name="home"),
+                  path(
+                      "about/", TemplateView.as_view(template_name="pages/about.html"), name="about"
+                  ),
+                  # Django Admin, use {% url 'admin:index' %}
+                  path(settings.ADMIN_URL, admin.site.urls),
+                  # User management
+                  path("users/", include("video_downloading_platform.users.urls", namespace="users")),
+                  path("accounts/", include("allauth.urls")),
+
+                  path("batch/list", my_batches_view, name="batch_list"),
+                  path("batch/<str:batch_id>/close", close_batch_view, name="close_batch"),
+                  path("batch/<str:batch_id>/archive", archive_batch_view, name="archive_batch"),
+                  path("batch/<str:batch_id>/details", batch_details_view, name="batch_details"),
+                  path("content/<str:content_id>", get_downloaded_file_view, name="get_downloaded_file"),
+                  path("content/<str:content_id>/download", get_downloaded_content_view, name="get_downloaded_content"),
+              ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
 
 # API URLS
 urlpatterns += [

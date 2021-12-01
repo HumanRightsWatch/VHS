@@ -1,0 +1,38 @@
+{% load i18n %}
+
+<div class="col-md-12 mb-4">
+  <div class="card">
+    <div class="card-header">
+      <h4>
+        <span class="badge bg-secondary">{{ batch.download_requests.count }}</span>
+        <a data-bs-toggle="collapse" href="#collapse_{{ batch.id }}" role="button" aria-expanded="false"
+           aria-controls="collapse_{{ batch.id }}">
+          {{ batch.name }}
+        </a>
+      </h4>
+    </div>
+    <div class="card-body">
+      <div class="align-content-center">
+        {% if batch.status != "ARCHIVED" %}
+          <div class="btn-group" role="group">
+            {% if batch.status == "OPEN" %}
+              <a href="{% url 'close_batch' batch.id %}" class="btn btn-sm btn-secondary" role="button">
+                {% translate "Close" %}
+              </a>
+            {% endif %}
+            <a href="{% url 'archive_batch' batch.id %}" class="btn btn-sm btn-danger" role="button">
+              {% translate "Archive" %}
+            </a>
+          </div>
+        {% endif %}
+      </div>
+      <p class="text-muted">
+        {{ batch.description }}
+      </p>
+
+      <div class="collapse" id="collapse_{{ batch.id }}">
+        {% include "partials/m_batch_details.html" with batch_status=batch.status %}
+      </div>
+    </div>
+  </div>
+</div>
