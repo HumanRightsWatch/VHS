@@ -122,6 +122,5 @@ def get_downloaded_file_view(request, content_id):
     content = DownloadedContent.objects.get(id=content_id)
     try:
         return HttpResponse(content.content, content_type=content.mime_type)
-    except Exception as e:
+    except Exception:
         return HttpResponse('')
-

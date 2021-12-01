@@ -218,8 +218,8 @@ class DownloadRequest(models.Model):
         from video_downloading_platform.core.tasks import run_download_request
         self.status = DownloadRequest.Status.ENQUEUED
         self.save()
-        run_download_request(self.id)
-        # async_task(run_download_request, self.id)
+        # run_download_request(self.id)
+        async_task(run_download_request, self.id)
 
     @staticmethod
     def get_users_requests(user):
@@ -278,7 +278,6 @@ class DownloadReport(models.Model):
         except Exception as e:
             print(e)
         return None
-
 
 
 def _get_upload_dir(instance, filename):
