@@ -1,106 +1,140 @@
-{% load static i18n compress%}<!DOCTYPE html>
+{% load static i18n compress %}
+{% load notifications_tags %}
+
+<!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="utf-8">
-    <meta http-equiv="x-ua-compatible" content="ie=edge">
-    <title>{% block title %}Video downloading platform{% endblock title %}</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="Download video from various sources.">
-    <meta name="author" content="U039b">
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  <title>{% block title %}Video downloading platform{% endblock title %}</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Download video from various sources.">
+  <meta name="author" content="U039b">
 
-    <link rel="icon" href="{% static 'images/favicons/favicon.ico' %}">
+  <link rel="icon" href="{% static 'images/favicons/favicon.ico' %}">
 
-    {% block css %}
+  {% block css %}
 
-    <!-- Your stuff: Third-party CSS libraries go here -->{% compress css %}
-    <!-- This file stores project-specific CSS -->
-    <link href="{% static 'css/project.css' %}" rel="stylesheet">{% endcompress %}
-    {% endblock %}
-    <!-- Le javascript
-    ================================================== -->
-    {# Placed at the top of the document so pages load faster with defer #}
-    {% block javascript %}
-      <!-- Vendor dependencies bundled as one file-->{% compress js %}
-      <script defer src="{% static 'js/vendors.js' %}"></script>{% endcompress %}
+    <!-- Your stuff: Third-party CSS libraries go here -->
+    {% compress css %}
+      <!-- This file stores project-specific CSS -->
+      <link href="{% static 'css/project.css' %}" rel="stylesheet">
+      <link href="{% static 'css/fork-awesome.min.css' %}" rel="stylesheet">
 
-      <!-- place project specific Javascript in this file -->{% compress js %}
-      <script defer src="{% static 'js/project.js' %}"></script>{% endcompress %}
+    {% endcompress %}
+  {% endblock %}
+  <!-- Le javascript
+  ================================================== -->
+  {# Placed at the top of the document so pages load faster with defer #}
+  {% block javascript %}
+    <!-- Vendor dependencies bundled as one file-->{% compress js %}
+    <script defer src="{% static 'js/vendors.js' %}"></script>{% endcompress %}
 
-    {% endblock javascript %}
+    <!-- place project specific Javascript in this file -->{% compress js %}
+    <script src="{% static 'js/project.js' %}"></script>{% endcompress %}
 
-  </head>
+    <script src="{% static 'notifications/notify.js' %}" type="text/javascript"></script>
+  {% endblock javascript %}
 
-  <body>
+</head>
 
-    <div class="mb-1">
-      <nav class="navbar navbar-expand-md navbar-light bg-light">
-        <div class="container-fluid">
-          <button class="navbar-toggler navbar-toggler-right" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
-            <span class="navbar-toggler-icon"></span>
+<body>
+
+<div class="mb-1">
+  <nav class="navbar navbar-expand-md navbar-light bg-light">
+    <div class="container-fluid">
+      <button class="navbar-toggler navbar-toggler-right" type="button" data-bs-toggle="collapse"
+              data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false"
+              aria-label="Toggle navigation">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+      <a class="navbar-brand" href="{% url 'home' %}">Video downloading platform</a>
+
+      <div class="collapse navbar-collapse" id="navbarSupportedContent">
+        <ul class="navbar-nav mr-auto">
+          <li class="nav-item active">
+            <a class="nav-link" href="{% url 'home' %}">Home <span class="visually-hidden">(current)</span></a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="{% url 'about' %}">About</a>
+          </li>
+          {% if request.user.is_authenticated %}
+            <li class="nav-item">
+              {# URL provided by django-allauth/account/urls.py #}
+              <a class="nav-link" href="{% url 'account_logout' %}">{% translate "Sign Out" %}</a>
+            </li>
+          {% else %}
+            <li class="nav-item">
+              {# URL provided by django-allauth/account/urls.py #}
+              <a id="sign-up-link" class="nav-link" href="{% url 'account_signup' %}">{% translate "Sign Up" %}</a>
+            </li>
+            <li class="nav-item">
+              {# URL provided by django-allauth/account/urls.py #}
+              <a id="log-in-link" class="nav-link" href="{% url 'account_login' %}">{% translate "Sign In" %}</a>
+            </li>
+          {% endif %}
+        </ul>
+      </div>
+      {% if request.user.is_authenticated %}
+        <div class="d-flex mr-5">
+          <button type="button" class="btn nav-link" id="notification_toaster_btn">
+            {% live_notify_badge %} notifications
           </button>
-          <a class="navbar-brand" href="{% url 'home' %}">Video downloading platform</a>
-
-          <div class="collapse navbar-collapse" id="navbarSupportedContent">
-            <ul class="navbar-nav mr-auto">
-              <li class="nav-item active">
-                <a class="nav-link" href="{% url 'home' %}">Home <span class="visually-hidden">(current)</span></a>
-              </li>
-              <li class="nav-item">
-                <a class="nav-link" href="{% url 'about' %}">About</a>
-              </li>
-              {% if request.user.is_authenticated %}
-{#                <li class="nav-item">#}
-                  {# URL provided by django-allauth/account/urls.py #}
-{#                  <a class="nav-link" href="{% url 'users:detail' request.user.username  %}">{% translate "My Profile" %}</a>#}
-{#                </li>#}
-                <li class="nav-item">
-                  {# URL provided by django-allauth/account/urls.py #}
-                  <a class="nav-link" href="{% url 'account_logout' %}">{% translate "Sign Out" %}</a>
-                </li>
-              {% else %}
-                <li class="nav-item">
-                  {# URL provided by django-allauth/account/urls.py #}
-                  <a id="sign-up-link" class="nav-link" href="{% url 'account_signup' %}">{% translate "Sign Up" %}</a>
-                </li>
-                <li class="nav-item">
-                  {# URL provided by django-allauth/account/urls.py #}
-                  <a id="log-in-link" class="nav-link" href="{% url 'account_login' %}">{% translate "Sign In" %}</a>
-                </li>
-              {% endif %}
-            </ul>
-          </div>
         </div>
-      </nav>
-
-    </div>
-
-    <div class="container">
-
-      {% if messages %}
-        {% for message in messages %}
-          <div class="alert alert-dismissible {% if message.tags %}alert-{{ message.tags }}{% endif %}">
-            {{ message }}
-            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-          </div>
-        {% endfor %}
       {% endif %}
+    </div>
+  </nav>
 
-      {% block content %}
-        <p>Use this document as a way to quick start any new project.</p>
-      {% endblock content %}
+</div>
 
-    </div> <!-- /container -->
+<div class="container">
 
-    {% block modal %}{% endblock modal %}
+  {% if messages %}
+    {% for message in messages %}
+      <div class="alert alert-dismissible {% if message.tags %}alert-{{ message.tags }}{% endif %}">
+        {{ message }}
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+      </div>
+    {% endfor %}
+  {% endif %}
 
-    {% block inline_javascript %}
-    {% comment %}
+  {% block content %}
+    <p>Use this document as a way to quick start any new project.</p>
+  {% endblock content %}
+
+
+  <div id="notification_toaster" class="position-fixed bottom-0 end-0 p-3" style="z-index: 11">
+  </div>
+</div> <!-- /container -->
+
+{% block modal %}{% endblock modal %}
+
+
+{% if request.user.is_authenticated %}
+
+  <script>
+    window.addEventListener('DOMContentLoaded', () => {
+      const toastTrigger = jQuery('#notification_toaster_btn');
+      const toastLive = jQuery('#notification_toaster');
+      if (toastTrigger) {
+        toastTrigger.click(function () {
+          toggle_toaster();
+        })
+      }
+      update_batch_statuses();
+      setTimeout(update_batch_statuses, 10000);
+    });
+  </script>
+  {% register_notify_callbacks callbacks='notification_toaster_callback,fill_notification_badge' %}
+{% endif %}
+{% block inline_javascript %}
+  {% comment %}
     Script tags with only code, no src (defer by default). To run
     with a "defer" so that you run run inline code:
     <script>
       window.addEventListener('DOMContentLoaded', () => {/* Run whatever you want */});
     </script>
     {% endcomment %}
-    {% endblock inline_javascript %}
-  </body>
+{% endblock inline_javascript %}
+</body>
 </html>

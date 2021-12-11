@@ -6,17 +6,8 @@
 {% block content %}
   <div class="row">
     <div class="col-md-7">
-      <h2>{% translate "My downloads" %}</h2>
-      <form method="post">
-        {% csrf_token %}
-        {{ dl_request_form|crispy }}
-        <button class="btn btn-primary" type="submit" name="request_download">{% translate "Save" %}</button>
-      </form>
-
-    </div>
-    <div class="col-md-5">
       <h2>
-        {% translate "My batches" %}
+        {% translate "My collections" %}
         <a href="{% url "batch_list" %}" class="btn btn-primary">
           {% translate "View all" %}
         </a>
@@ -26,7 +17,7 @@
           <form method="post">
             {% csrf_token %}
             {{ batch_form|crispy }}
-            <button class="btn btn-primary" type="submit" name="save_batch">{% translate "Save" %}</button>
+            <button class="btn btn-primary" type="submit" name="save_batch">{% translate "Create" %}</button>
           </form>
         </div>
       </div>
@@ -40,8 +31,19 @@
                   {{ batch.name }}<br>
                   <span class="small">{{ batch.updated_at|naturaltime }}</span>
                 </div>
-                <div class="col-md-1 align-right">
-                  <span class="badge bg-secondary">{{ batch.download_requests.count }}</span>
+                <div class="col-md-3 align-right">
+                  <span class="badge bg-secondary">
+                    <i class="fa fa-arrow-circle-right" aria-hidden="true"></i>
+                    <span id="{{ batch.id }}_submitted" class="badge ">0</span>
+                  </span>
+                  <span class="badge bg-success">
+                    <i class="fa fa-check-circle" aria-hidden="true"></i>
+                    <span id="{{ batch.id }}_succeeded" class="badge ">0</span>
+                  </span>
+                  <span class="badge bg-danger">
+                    <i class="fa fa-times-circle" aria-hidden="true"></i>
+                    <span id="{{ batch.id }}_failed" class="badge ">0</span>
+                  </span>
                 </div>
               </div>
             </div>
@@ -61,6 +63,15 @@
           </div>
         {% endfor %}
       </div>
+    </div>
+    <div class="col-md-5">
+      <h2>{% translate "My downloads" %}</h2>
+      <form method="post">
+        {% csrf_token %}
+        {{ dl_request_form|crispy }}
+        <button class="btn btn-primary" type="submit" name="request_download">{% translate "Submit" %}</button>
+      </form>
+
     </div>
   </div>
 

@@ -23,7 +23,7 @@ admin.site.register(DownloadRequest, DownloadRequestAdmin)
 
 
 class DownloadReportAdmin(admin.ModelAdmin):
-    pass
+    list_display = ('id', 'archive')
 
 
 admin.site.register(DownloadReport, DownloadReportAdmin)

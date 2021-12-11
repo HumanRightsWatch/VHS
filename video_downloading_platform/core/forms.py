@@ -10,6 +10,9 @@ class BatchRequestForm(forms.ModelForm):
             'batch',
             'urls'
         ]
+        labels = {
+            'batch': 'Collection',
+        }
 
     def set_user(self, connected_user):
         if connected_user:

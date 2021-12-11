@@ -30,3 +30,4 @@ django-markdownify
 django-tinymce
 django-q
 django-minio-storage
+django-notifications-hq

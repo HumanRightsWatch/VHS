@@ -26,10 +26,11 @@ DEBUG = env.bool("DJANGO_DEBUG", False)
 TIME_ZONE = "UTC"
 # https://docs.djangoproject.com/en/dev/ref/settings/#language-code
 LANGUAGE_CODE = "en-us"
+# LANGUAGE_CODE = "en-us"
 # https://docs.djangoproject.com/en/dev/ref/settings/#site-id
 SITE_ID = 1
 # https://docs.djangoproject.com/en/dev/ref/settings/#use-i18n
-USE_I18N = True
+USE_I18N = False
 # https://docs.djangoproject.com/en/dev/ref/settings/#use-l10n
 USE_L10N = True
 # https://docs.djangoproject.com/en/dev/ref/settings/#use-tz
@@ -69,6 +70,7 @@ THIRD_PARTY_APPS = [
     "allauth",
     "allauth.account",
     "allauth.socialaccount",
+    "notifications",
     "rest_framework",
     "rest_framework.authtoken",
     "corsheaders",
@@ -275,13 +277,20 @@ ACCOUNT_ALLOW_REGISTRATION = env.bool("DJANGO_ACCOUNT_ALLOW_REGISTRATION", True)
 # https://django-allauth.readthedocs.io/en/latest/configuration.html
 ACCOUNT_AUTHENTICATION_METHOD = "username"
 # https://django-allauth.readthedocs.io/en/latest/configuration.html
-ACCOUNT_EMAIL_REQUIRED = True
+ACCOUNT_EMAIL_REQUIRED = False
 # https://django-allauth.readthedocs.io/en/latest/configuration.html
-ACCOUNT_EMAIL_VERIFICATION = "mandatory"
+ACCOUNT_EMAIL_VERIFICATION = "none"
 # https://django-allauth.readthedocs.io/en/latest/configuration.html
 ACCOUNT_ADAPTER = "video_downloading_platform.users.adapters.AccountAdapter"
 # https://django-allauth.readthedocs.io/en/latest/configuration.html
 SOCIALACCOUNT_ADAPTER = "video_downloading_platform.users.adapters.SocialAccountAdapter"
+# SOCIALACCOUNT_PROVIDERS = {
+#     'microsoft': {
+#         'tenant': 'organizations',
+#     }
+# }
+
+
 # django-compressor
 # ------------------------------------------------------------------------------
 # https://django-compressor.readthedocs.io/en/latest/quickstart/#installation
@@ -300,7 +309,7 @@ REST_FRAMEWORK = {
 
 # django-cors-headers - https://github.com/adamchainz/django-cors-headers#setup
 CORS_URLS_REGEX = r"^/api/.*$"
-
+DJANGO_NOTIFICATIONS_CONFIG = { 'USE_JSONFIELD': True}
 MARKDOWNIFY_MARKDOWN_EXTENSIONS = ['markdown.extensions.nl2br']
 
 # Django Q

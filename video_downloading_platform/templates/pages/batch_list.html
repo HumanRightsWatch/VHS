@@ -6,25 +6,44 @@
 {% block content %}
   <div class="row">
     <div class="col-md-12">
-      <h1>{% translate "My batches" %}</h1>
+      <h1>{% trans "My collections" %}</h1>
+    </div>
+    <div class="col-md-12">
+      <table class="table table-hover">
+        <thead>
+        <tr>
+          <td># URLs</td>
+          <td>Name</td>
+          <td>Owner</td>
+          <td>Status</td>
+          <td>Created at</td>
+          <td>Updated at</td>
+          <td></td>
+        </tr>
+        </thead>
+        <tbody>
+        {% for batch in batches %}
+          <tr class="table-{{ batch.status_class }}">
+            <td>{{ batch.download_requests.count }}</td>
+            <td>{{ batch.name }}</td>
+            <td>{{ batch.owner }}</td>
+            <td>
+              <span class="badge bg-{{ batch.status_class }}">
+                {{ batch.status }}
+              </span>
+            </td>
+            <td>{{ batch.created_at }}</td>
+            <td>{{ batch.updated_at }}</td>
+            <td>
+              <a href="{% url 'batch_details' batch.id %}" class="btn btn-sm btn-primary" role="button">
+                {% translate "Details" %}
+              </a>
+            </td>
+          </tr>
+        {% endfor %}
+        </tbody>
+      </table>
     </div>
   </div>
-  <div class="row">
-    <h2>{% translate "Opened batches" %}</h2>
-    {% for batch in opened %}
-      {% include "partials/m_batch.html" %}
-    {% endfor %}
-  </div>
-  <div class="row">
-    <h2>{% translate "Closed batches" %}</h2>
-    {% for batch in closed %}
-      {% include "partials/m_batch.html" %}
-    {% endfor %}
-  </div>
-  <div class="row">
-    <h2>{% translate "Archived batches" %}</h2>
-    {% for batch in archived %}
-      {% include "partials/m_batch.html" %}
-    {% endfor %}
-  </div>
+
 {% endblock content %}

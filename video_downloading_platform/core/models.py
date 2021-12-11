@@ -45,16 +45,16 @@ class Batch(models.Model):
     id = models.UUIDField(
         primary_key=True,
         default=uuid.uuid4,
-        help_text=_('Unique identifier of your download batch.'),
+        help_text=_('Unique identifier of your collection.'),
         editable=False
     )
     created_at = models.DateTimeField(
         auto_now_add=True,
-        help_text=_('Creation date of your download batch.'),
+        help_text=_('Creation date of your collection.'),
         editable=False
     )
     updated_at = models.DateTimeField(
-        help_text=_('Latest modification of your download batch.'),
+        help_text=_('Latest modification of your collection.'),
         auto_now=True
     )
     status = models.CharField(
@@ -64,7 +64,7 @@ class Batch(models.Model):
     )
     name = models.CharField(
         max_length=512,
-        help_text=_('Give a meaningful name to your download batch.'),
+        help_text=_('Give a meaningful name to your collection.'),
         default=_generate_random_name
     )
     description = models.TextField(
@@ -74,7 +74,7 @@ class Batch(models.Model):
     owner = models.ForeignKey(
         settings.AUTH_USER_MODEL,
         on_delete=models.CASCADE,
-        help_text=_('Who owns the current download batch.'),
+        help_text=_('Who owns the current collection.'),
         related_name='my_batches',
         editable=False
     )
@@ -87,9 +87,9 @@ class Batch(models.Model):
         self.status = Batch.ARCHIVED
         for download_request in self.download_requests.all():
             for report in download_request.report.all():
+                if report.archive:
+                    report.archive.delete()
                 for downloaded_content in report.downloadedcontent_set.all():
-                    print('>>>', hasattr(downloaded_content, 'content'))
-                    print('>>>', hasattr(downloaded_content.content, 'file'))
                     if downloaded_content.content:
                         downloaded_content.content.delete()
         self.save()
@@ -105,7 +105,12 @@ class Batch(models.Model):
     @staticmethod
     def get_users_batches(user):
         try:
-            return Batch.objects.filter(owner=user)
+            user_groups = user.groups.values_list('name', flat = True)
+            print(user_groups)
+            if 'admin' in user_groups:
+                return Batch.objects.all()
+            else:
+                return Batch.objects.filter(owner=user)
         except Exception as e:
             print(e)
         return None
@@ -125,10 +130,24 @@ class Batch(models.Model):
     @staticmethod
     def _get_users_batches(user, status):
         try:
-            return Batch.objects.filter(owner=user, status=status)
+            user_groups = user.groups.values_list('name', flat=True)
+            print(user_groups)
+            if 'admin' in user_groups:
+                return Batch.objects.filter(status=status)
+            else:
+                return Batch.objects.filter(owner=user, status=status)
         except Exception as e:
             print(e)
         return None
+
+    @property
+    def status_class(self):
+        if self.status == Batch.OPEN:
+            return 'success'
+        if self.status == Batch.CLOSED:
+            return 'primary'
+        if self.status == Batch.ARCHIVED:
+            return 'secondary'
 
     def __str__(self):
         return self.name
@@ -233,6 +252,12 @@ class DownloadRequest(models.Model):
         return f'{self.owner} - {self.url}'
 
 
+def _get_zip_upload_dir(instance, filename):
+    owner_id = instance.owner.id
+    download_request_id = instance.download_request.id
+    return f'{owner_id}/{download_request_id}/{instance.id}.archive.zip'
+
+
 class DownloadReport(models.Model):
     id = models.UUIDField(
         primary_key=True,
@@ -268,10 +293,16 @@ class DownloadReport(models.Model):
         help_text=_('Who owns the current download request.'),
         editable=False
     )
+    archive = models.FileField(
+        upload_to=_get_zip_upload_dir,
+        max_length=512,
+        null=True,
+        blank=True
+    )
 
     def get_thumbnail(self):
         try:
-            content = self.downloadedcontent_set.filter(mime_type='image/jpeg').first()
+            content = self.downloadedcontent_set.filter(mime_type__in=['image/jpeg', 'image/webp']).first()
             if content:
                 url = reverse_lazy("get_downloaded_file", kwargs={'content_id': content.id})
                 return url

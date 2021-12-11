@@ -1,0 +1,30 @@
+{% load humanize %}
+{% load i18n %}
+
+{% for notif in notifications %}
+  <div class="toast" role="alert" aria-live="assertive" aria-atomic="true" data-bs-autohide="false">
+    <div class="toast-header" id="toast-{{ notif.slug }}">
+      {% if notif.level == "info" %}
+        <span class="badge bg-success mr-2"><i class="fa fa-info" aria-hidden="true"></i></span>
+      {% elif notif.level == "error" %}
+        <span class="badge bg-danger mr-2"><i class="fa fa-times" aria-hidden="true"></i></span>
+      {% endif %}
+      &nbsp;
+      <strong class="me-auto">VHS</strong>
+      <small class="text-muted">{{ notif.timestamp|naturaltime }}</small>
+      <button type="button" class="btn ml-2 mb-1 close close-notif"
+              data-dismiss="toast" aria-label="Close"
+              onclick="mark_notif_as_read({{ notif.slug }})">
+        <i class="fa fa-times" aria-hidden="true"></i>
+      </button>
+    </div>
+    <div class="toast-body">
+      {{ notif.description }}
+      <div>
+        {% for a in notif.data.actions %}
+          <a href="{{ a.url }}">{{ a.title }}</a>
+        {% endfor %}
+      </div>
+    </div>
+  </div>
+{% endfor %}

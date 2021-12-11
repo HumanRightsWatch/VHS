@@ -5,6 +5,8 @@ from django.urls import include, path
 from django.views import defaults as default_views
 from django.views.generic import TemplateView
 from rest_framework.authtoken.views import obtain_auth_token
+import notifications.urls
+
 
 from video_downloading_platform.core.views import (
     home_view,
@@ -12,7 +14,8 @@ from video_downloading_platform.core.views import (
     batch_details_view,
     get_downloaded_content_view,
     my_batches_view,
-    get_downloaded_file_view, archive_batch_view,
+    get_downloaded_file_view, archive_batch_view, get_report_archive_view, get_batch_status_view,
+    get_unread_notifications_view,
 )
 
 urlpatterns = [
@@ -20,18 +23,25 @@ urlpatterns = [
                   path(
                       "about/", TemplateView.as_view(template_name="pages/about.html"), name="about"
                   ),
+                  # Notifications
+                  path('inbox/notifications/', include(notifications.urls, namespace='notifications')),
+
                   # Django Admin, use {% url 'admin:index' %}
                   path(settings.ADMIN_URL, admin.site.urls),
                   # User management
                   path("users/", include("video_downloading_platform.users.urls", namespace="users")),
                   path("accounts/", include("allauth.urls")),
 
+                  path("notifications", get_unread_notifications_view, name="get_unread_notifications"),
+
                   path("batch/list", my_batches_view, name="batch_list"),
+                  path("batch/statuses", get_batch_status_view, name="get_batch_status"),
                   path("batch/<str:batch_id>/close", close_batch_view, name="close_batch"),
                   path("batch/<str:batch_id>/archive", archive_batch_view, name="archive_batch"),
                   path("batch/<str:batch_id>/details", batch_details_view, name="batch_details"),
                   path("content/<str:content_id>", get_downloaded_file_view, name="get_downloaded_file"),
                   path("content/<str:content_id>/download", get_downloaded_content_view, name="get_downloaded_content"),
+                  path("report/<str:report_id>/download", get_report_archive_view, name="get_report_archive"),
               ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
 
 # API URLS
