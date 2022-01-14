@@ -11,8 +11,8 @@ on:
 
 env:
   REGISTRY: ghcr.io
-  DJANGO_IMAGE_NAME: vhs_django
-  WORKER_IMAGE_NAME: vhs_worker
+  DJANGO_IMAGE_NAME: hrw/vhs_django
+  WORKER_IMAGE_NAME: hrw/vhs_worker
 
 jobs:
   build-and-push-django-image:
