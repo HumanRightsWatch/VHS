@@ -105,7 +105,7 @@ class Batch(models.Model):
     @staticmethod
     def get_users_batches(user):
         try:
-            user_groups = user.groups.values_list('name', flat = True)
+            user_groups = user.groups.values_list('name', flat=True)
             print(user_groups)
             if 'admin' in user_groups:
                 return Batch.objects.all()
@@ -237,7 +237,6 @@ class DownloadRequest(models.Model):
         from video_downloading_platform.core.tasks import run_download_request
         self.status = DownloadRequest.Status.ENQUEUED
         self.save()
-        # run_download_request(self.id)
         async_task(run_download_request, self.id)
 
     @staticmethod

@@ -7,7 +7,6 @@ from django.utils.translation import gettext as _
 
 from django.http import HttpResponse, JsonResponse
 from notifications.utils import id2slug
-from notifications.views import live_unread_notification_list
 
 from video_downloading_platform.core.forms import BatchForm, BatchRequestForm
 from video_downloading_platform.core.models import Batch, DownloadRequest, DownloadedContent, DownloadReport
@@ -240,7 +239,3 @@ def get_report_archive_view(request, report_id):
     response = HttpResponse(report.archive, content_type='application/zip')
     response['Content-Disposition'] = 'inline; filename=' + report.archive.name
     return response
-    # try:
-    #     return HttpResponse(report.archive, content_type='application/zip')
-    # except Exception:
-    #     return HttpResponse('')

@@ -10,7 +10,6 @@ from os import path
 import youtube_dl
 from django.core.files import File
 from django.urls import reverse_lazy
-from notifications.models import Notification
 from notifications.signals import notify
 
 from video_downloading_platform.core.models import (
