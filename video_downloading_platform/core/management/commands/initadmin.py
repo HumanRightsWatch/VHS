@@ -2,6 +2,7 @@ from django.core.management import BaseCommand
 from django.contrib.auth import get_user_model
 import environ
 
+
 class Command(BaseCommand):
 
     def handle(self, *args, **options):
@@ -20,6 +21,6 @@ class Command(BaseCommand):
                     first_name="Administrator",
                     password=admin_password,
                 )
-                print(f"Super user has been created")
+                print("Super user has been created")
             else:
                 print("Set the ADMIN_PASSWORD environment variable.")
