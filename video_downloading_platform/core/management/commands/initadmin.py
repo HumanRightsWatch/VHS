@@ -17,9 +17,8 @@ class Command(BaseCommand):
             admin_password = env("ADMIN_PASSWORD", default=None)
             if admin_password:
                 user = User.objects.create_superuser(
-                    username="admin",
-                    first_name="Administrator",
-                    password=admin_password,
+                    "admin",
+                    password=admin_password
                 )
                 print("Super user has been created")
             else:
