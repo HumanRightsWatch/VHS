@@ -68,7 +68,7 @@ class Batch(models.Model):
         default=_generate_random_name
     )
     description = models.TextField(
-        help_text=_('Say a bit more about it. (Optional)'),
+        help_text=_('Say a bit more about it.'),
         default=_('No description')
     )
     owner = models.ForeignKey(
