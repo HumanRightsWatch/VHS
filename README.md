@@ -60,7 +60,7 @@ To learn how to deploy this application with Docker, please refer
 to [the Cookiecutter documentation](http://cookiecutter-django.readthedocs.io/en/latest/deployment-with-docker.html).
 
 ### Azure
-To learn how to deploy this application with Docker, please refer to [our step-by-step guide](doc/azure.md).
+To learn how to deploy this application on Microsoft Azure, please refer to [our step-by-step guide](doc/azure.md).
 
 ## Custom Bootstrap Compilation
 The generated CSS is set up with automatic Bootstrap recompilation with variables of your choice. Bootstrap v4 is
