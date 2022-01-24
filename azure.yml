@@ -2,7 +2,7 @@ version: '3'
 
 services:
   django:
-    image: ghcr.io/humanrightswatch/vhs:main
+    image: ghcr.io/humanrightswatch/vhs:nightly
     restart: always
     depends_on:
       - postgres
@@ -20,7 +20,7 @@ services:
       - ${WEBAPP_STORAGE_HOME}/postgres_data_backups:/backups:z
 
   worker:
-    image: ghcr.io/humanrightswatch/vhs:main
+    image: ghcr.io/humanrightswatch/vhs:nightly
     restart: always
     depends_on:
       - redis
