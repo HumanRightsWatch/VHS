@@ -44,7 +44,7 @@ def run_download_request(download_request_id):
         download_report.save()
         with tempfile.TemporaryDirectory() as tmp_dir:
             options = {
-                'outtmpl': f'{tmp_dir}/%(title)s-%(id)s.%(ext)s',
+                'outtmpl': f'{tmp_dir}/%(id)s.%(ext)s',
                 'format': 'best',
                 'writedescription': True,
                 'writeinfojson': True,
