@@ -15,6 +15,8 @@ services:
   postgres:
     image: postgres:14.1
     restart: always
+    environment:
+      - PGDATA=/var/lib/postgresql/data/pgdata
     volumes:
       - ${WEBAPP_STORAGE_HOME}/postgres_data:/var/lib/postgresql/data:Z
       - ${WEBAPP_STORAGE_HOME}/postgres_data_backups:/backups:z
