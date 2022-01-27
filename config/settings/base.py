@@ -70,7 +70,7 @@ THIRD_PARTY_APPS = [
     "allauth",
     "allauth.account",
     "allauth.socialaccount",
-    "allauth.socialaccount.providers.azure",
+    "allauth.socialaccount.providers.microsoft",
     "notifications",
     "rest_framework",
     "rest_framework.authtoken",
@@ -80,6 +80,12 @@ THIRD_PARTY_APPS = [
     "django_q",
     "minio_storage",
 ]
+
+SOCIALACCOUNT_PROVIDERS = {
+    'microsoft': {
+        'tenant': env("AZURE_TENANT", ""),
+    }
+}
 
 LOCAL_APPS = [
     "video_downloading_platform.users.apps.UsersConfig",
