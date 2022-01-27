@@ -64,11 +64,14 @@ class Batch(models.Model):
     )
     name = models.CharField(
         max_length=512,
-        help_text=_('Give a meaningful name to your collection.'),
-        default=_generate_random_name
+        verbose_name=_('name'),
+        help_text=_('Give a meaningful name to your collection. We suggest the name of your project, date, your '
+                    'initials separated by underscores. For example Ariha_Syria_20_Nov_2022_GI.'),
+        default=''
+        # default=_generate_random_name
     )
     description = models.TextField(
-        help_text=_('Say a bit more about it.'),
+        help_text=_('Add more details about the project here.'),
         default=_('No description')
     )
     owner = models.ForeignKey(
