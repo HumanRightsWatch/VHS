@@ -13,15 +13,12 @@
 {% get_providers as socialaccount_providers %}
 
 {% if socialaccount_providers %}
-<p>{% blocktranslate with site.name as site_name %}Please sign in with one
-of your existing third party accounts. Or, <a href="{{ signup_url }}">sign up</a>
-for a {{ site_name }} account and sign in below:{% endblocktranslate %}</p>
 
 <div class="socialaccount_ballot">
 
-  <ul class="socialaccount_providers">
-    {% include "socialaccount/snippets/provider_list.html" with process="login" %}
-  </ul>
+      <ul class="socialaccount_providers list-unstyled">
+        {% include "account/provider_list.html" with process="login" %}
+      </ul>
 
   <div class="login-or">{% translate 'or' %}</div>
 
