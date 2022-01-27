@@ -83,7 +83,7 @@ THIRD_PARTY_APPS = [
 
 SOCIALACCOUNT_PROVIDERS = {
     'microsoft': {
-        'tenant': env("AZURE_TENANT", ""),
+        'tenant': env.str("AZURE_TENANT", ""),
     }
 }
 
