@@ -32,7 +32,7 @@ services:
     command: /start-worker
 
   minio:
-    image: minio/minio:RELEASE.2021-06-17T00-10-46Z.hotfix.e6c50dc4c
+    image: quay.io/minio/minio:RELEASE.2022-01-08T03-11-54Z
     restart: always
     volumes:
       - ${WEBAPP_STORAGE_HOME}/minio_data:/data
