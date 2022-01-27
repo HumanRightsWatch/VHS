@@ -68,9 +68,3 @@ jobs:
           push: ${{ github.event_name != 'pull_request' }}
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
-
-      - name: Invoke deployment hook
-        uses: distributhor/workflow-webhook@v2
-        env:
-          webhook_url: ${{ secrets.AZURE_CONTINUOUS_DEPLOYMENT_HOOK }}
-          webhook_secret: ${{ secrets.AZURE_CONTINUOUS_DEPLOYMENT_HOOK_SECRET}}
