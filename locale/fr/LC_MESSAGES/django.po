@@ -7,8 +7,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2022-01-25 15:24+0000\n"
-"PO-Revision-Date: 2022-01-25 17:00+0100\n"
+"POT-Creation-Date: 2022-01-28 12:35+0000\n"
+"PO-Revision-Date: 2022-01-28 13:39+0100\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "Language: fr\n"
@@ -47,6 +47,10 @@ msgid "Latest modification of your collection."
 msgstr "Dernière modification de votre collection."
 
 #: video_downloading_platform/core/models.py:67
+msgid "name"
+msgstr "nom"
+
+#: video_downloading_platform/core/models.py:68
 msgid ""
 "Give a meaningful name to your collection. We suggest the name of your "
 "project, date, your initials separated by underscores. For example "
@@ -56,96 +60,96 @@ msgstr ""
 "votre projet, la date, vos initiales séparées par des tirets bas. Par "
 "exemple Ariha_Syria_20_Nov_2022_GI."
 
-#: video_downloading_platform/core/models.py:73
+#: video_downloading_platform/core/models.py:74
 msgid "Add more details about the project here."
 msgstr "Ajouter plus de détails concernant le projet."
 
-#: video_downloading_platform/core/models.py:74
+#: video_downloading_platform/core/models.py:75
 msgid "No description"
 msgstr "Pas de description"
 
-#: video_downloading_platform/core/models.py:79
+#: video_downloading_platform/core/models.py:80
 msgid "Who owns the current collection."
 msgstr "Propriétaire de la collection."
 
-#: video_downloading_platform/core/models.py:169
+#: video_downloading_platform/core/models.py:168
 msgid "One URL per line"
 msgstr "Une URL par ligne"
 
-#: video_downloading_platform/core/models.py:176
+#: video_downloading_platform/core/models.py:175
 msgid "Created"
 msgstr "Crée"
 
-#: video_downloading_platform/core/models.py:177
+#: video_downloading_platform/core/models.py:176
 msgid "Enqueued"
 msgstr "Placé en file d'attente"
 
-#: video_downloading_platform/core/models.py:178
+#: video_downloading_platform/core/models.py:177
 msgid "Processing"
 msgstr "En cours d'exécution"
 
-#: video_downloading_platform/core/models.py:179
+#: video_downloading_platform/core/models.py:178
 msgid "Post processing"
 msgstr "Post-traitement"
 
-#: video_downloading_platform/core/models.py:180
+#: video_downloading_platform/core/models.py:179
 msgid "Succeeded"
 msgstr "Succès"
 
-#: video_downloading_platform/core/models.py:181
+#: video_downloading_platform/core/models.py:180
 msgid "Cancelled"
 msgstr "Annulé"
 
-#: video_downloading_platform/core/models.py:182
+#: video_downloading_platform/core/models.py:181
 msgid "Failed"
 msgstr "En erreur"
 
-#: video_downloading_platform/core/models.py:188
+#: video_downloading_platform/core/models.py:187
 msgid "Video"
 msgstr "Vidéo"
 
-#: video_downloading_platform/core/models.py:189
+#: video_downloading_platform/core/models.py:188
 msgid "Audio"
 msgstr "Audio"
 
-#: video_downloading_platform/core/models.py:190
+#: video_downloading_platform/core/models.py:189
 msgid "Web page"
 msgstr "Page web"
 
-#: video_downloading_platform/core/models.py:196
+#: video_downloading_platform/core/models.py:195
 msgid "Unique identifier of the current download request."
 msgstr "Identifiant unique de votre demande de téléchargement."
 
-#: video_downloading_platform/core/models.py:201
+#: video_downloading_platform/core/models.py:200
 msgid "Creation date of the current download request."
 msgstr "Date de création de votre demande de téléchargement."
 
-#: video_downloading_platform/core/models.py:205
+#: video_downloading_platform/core/models.py:204
 msgid "Latest modification of the current download request."
 msgstr "Dernière modification de votre demande de téléchargement."
 
-#: video_downloading_platform/core/models.py:224
+#: video_downloading_platform/core/models.py:223
 msgid "The URL of the video to download."
 msgstr "L'URL de la vidéo à télécharger."
 
-#: video_downloading_platform/core/models.py:229
-#: video_downloading_platform/core/models.py:294
-#: video_downloading_platform/core/models.py:368
+#: video_downloading_platform/core/models.py:228
+#: video_downloading_platform/core/models.py:293
+#: video_downloading_platform/core/models.py:367
 msgid "Who owns the current download request."
 msgstr "Propriétaire de la demande de téléchargement en cours."
 
-#: video_downloading_platform/core/models.py:266
-#: video_downloading_platform/core/models.py:325
+#: video_downloading_platform/core/models.py:265
+#: video_downloading_platform/core/models.py:324
 msgid "Unique identifier of the current downloaded content."
 msgstr "Identifiant unique du contenu téléchargé."
 
-#: video_downloading_platform/core/models.py:271
-#: video_downloading_platform/core/models.py:330
+#: video_downloading_platform/core/models.py:270
+#: video_downloading_platform/core/models.py:329
 msgid "Creation date of the current downloaded content."
 msgstr "Date de création du contenu téléchargé."
 
-#: video_downloading_platform/core/models.py:275
-#: video_downloading_platform/core/models.py:334
+#: video_downloading_platform/core/models.py:274
+#: video_downloading_platform/core/models.py:333
 msgid "Latest modification of the current downloaded content."
 msgstr "Dernière modification du contenu téléchargé."
 
@@ -261,33 +265,15 @@ msgstr ""
 
 #: video_downloading_platform/templates/account/login.html:7
 #: video_downloading_platform/templates/account/login.html:11
-#: video_downloading_platform/templates/account/login.html:44
-#: video_downloading_platform/templates/base.html:76
+#: video_downloading_platform/templates/base.html:72
 msgid "Sign In"
 msgstr ""
 
-#: video_downloading_platform/templates/account/login.html:16
-#, python-format
-msgid ""
-"Please sign in with one\n"
-"of your existing third party accounts. Or, <a href=\"%(signup_url)s\">sign "
-"up</a>\n"
-"for a %(site_name)s account and sign in below:"
-msgstr ""
-
-#: video_downloading_platform/templates/account/login.html:26
-msgid "or"
-msgstr "ou"
-
-#: video_downloading_platform/templates/account/login.html:33
+#: video_downloading_platform/templates/account/login.html:28
 #, python-format
 msgid ""
 "If you have not created an account yet, then please\n"
 "<a href=\"%(signup_url)s\">sign up</a> first."
-msgstr ""
-
-#: video_downloading_platform/templates/account/login.html:43
-msgid "Forgot Password?"
 msgstr ""
 
 #: video_downloading_platform/templates/account/logout.html:5
@@ -365,13 +351,16 @@ msgstr ""
 msgid "Set Password"
 msgstr ""
 
+#: video_downloading_platform/templates/account/provider_list.html:19
+msgid "Login with your organization's account"
+msgstr ""
+
 #: video_downloading_platform/templates/account/signup.html:6
 msgid "Signup"
 msgstr ""
 
 #: video_downloading_platform/templates/account/signup.html:9
 #: video_downloading_platform/templates/account/signup.html:19
-#: video_downloading_platform/templates/base.html:72
 msgid "Sign Up"
 msgstr ""
 
@@ -431,7 +420,7 @@ msgid "My collections"
 msgstr "Mes collections"
 
 #: video_downloading_platform/templates/pages/batch_list.html:39
-#: video_downloading_platform/templates/pages/home.html:75
+#: video_downloading_platform/templates/pages/home.html:76
 msgid "Details"
 msgstr "Détails"
 
@@ -446,6 +435,18 @@ msgstr "Mes collections ouvertes"
 #: video_downloading_platform/templates/pages/batch_list_old.html:19
 msgid "Closed batches"
 msgstr "Mes collections fermées"
+
+#: video_downloading_platform/templates/pages/home.html:10
+msgid ""
+"Welcome to VHS. This tool will help you to download videos from over 1000 "
+"websites including social media platforms. Click on the About "
+"<strong>section</strong> in the menu above to learn more about the tool and "
+"for frequently asked questions."
+msgstr ""
+"Bienvenu sur VHS. Cet outil vous aidera à télécharger des vidéos à partir de "
+"plus de 1000 sites web, y compris des plateformes de médias sociaux. Cliquez "
+"sur la <strong>section</strong> À propos dans le menu ci-dessus pour en "
+"savoir plus sur l'outil et sur les questions fréquemment posées."
 
 #: video_downloading_platform/templates/pages/home.html:16
 msgid "My downloads"
@@ -463,14 +464,14 @@ msgstr "Voir tout"
 msgid "Create"
 msgstr "Créer"
 
-#: video_downloading_platform/templates/pages/home.html:72
-#: video_downloading_platform/templates/partials/m_batch.html:13
+#: video_downloading_platform/templates/pages/home.html:73
+#: video_downloading_platform/templates/partials/m_batch.html:19
 #: video_downloading_platform/templates/partials/m_modal_error.html:16
 #: video_downloading_platform/templates/partials/m_modal_metadata.html:21
 msgid "Close"
 msgstr "Fermer"
 
-#: video_downloading_platform/templates/partials/m_batch.html:17
+#: video_downloading_platform/templates/partials/m_batch.html:23
 msgid "Archive"
 msgstr "Archiver"
 
@@ -538,6 +539,9 @@ msgstr ""
 #: video_downloading_platform/users/views.py:25
 msgid "Information successfully updated"
 msgstr ""
+
+#~ msgid "or"
+#~ msgstr "ou"
 
 #~ msgid "Give a meaningful name to your download batch."
 #~ msgstr "Donner un nom à votre batch."

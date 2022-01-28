@@ -1,4 +1,4 @@
-{% load socialaccount %}
+{% load socialaccount i18n %}
 
 {% get_providers as socialaccount_providers %}
 
@@ -16,7 +16,9 @@
   <li>
     <a title="{{ provider.name }}" class="socialaccount_provider {{ provider.id }} btn btn-primary btn-lg m-4"
        href="{% provider_login_url provider.id process=process scope=scope auth_params=auth_params %}">
-      <i class="fa fa-sign-in mr-4"></i> Login with {{ provider.name }}
+      <i class="fa fa-sign-in mr-4"></i> {% translate "Login with your organization's account" %}
+{#      <br>#}
+{#      <span style="font-size: 0.65em">{{ provider.name }}</span>#}
     </a>
   </li>
 {% endfor %}
