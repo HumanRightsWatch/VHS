@@ -25,6 +25,7 @@ class BatchRequestForm(forms.ModelForm):
             striped_url = url.strip()
             if len(striped_url) > 0:
                 cleaned_urls.append(striped_url)
+        cleaned_urls = list(set(cleaned_urls))
         return '\n'.join(cleaned_urls)
 
 

@@ -45,7 +45,8 @@
               <div class="row">
                 <div class="col">
                   <span class="h5">{{ batch.name }}</span><br>
-                  <span class="small">{{ batch.updated_at|naturaltime }}</span>
+                  <span class="small"><i class="fa fa-user" aria-hidden="true"></i> {{ batch.owner }}</span>
+                  <span class="small"><i class="fa fa-clock-o" aria-hidden="true"></i> {{ batch.updated_at|naturaltime }}</span>
                 </div>
                 <div class="col-md-4 align-right h4">
                   <span class="badge bg-secondary">
@@ -69,10 +70,10 @@
             <div class="card-footer">
               <div class="btn-group" role="group">
                 <a href="{% url 'close_batch' batch.id %}" class="btn btn-sm btn-secondary" role="button">
-                  {% translate "Close" %}
+                  <i class="fa fa-times" aria-hidden="true"></i> {% translate "Close" %}
                 </a>
                 <a href="{% url 'batch_details' batch.id %}" class="btn btn-sm btn-primary" role="button">
-                  {% translate "Details" %}
+                  <i class="fa fa-search" aria-hidden="true"></i> {% translate "Details" %}
                 </a>
               </div>
             </div>

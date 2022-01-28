@@ -5,25 +5,28 @@
     <span class="badge bg-secondary">{{ batch.download_requests.count }}</span>
     {{ batch.name }}
   </h1>
+  <p class="text-muted">
+    <i class="fa fa-user" aria-hidden="true"></i>  {{ batch.owner }}
+  </p>
+  <p class="text-muted">
+    {{ batch.description }}
+  </p>
   <div class="align-content-center">
     {% if batch.status != "ARCHIVED" %}
       <div class="btn-group" role="group">
         {% if batch.status == "OPEN" %}
           <a href="{% url 'close_batch' batch.id %}" class="btn btn-sm btn-secondary" role="button">
-            {% translate "Close" %}
+            <i class="fa fa-times" aria-hidden="true"></i> {% translate "Close" %}
           </a>
         {% endif %}
         <a href="{% url 'archive_batch' batch.id %}" class="btn btn-sm btn-danger" role="button">
-          {% translate "Archive" %}
+          <i class="fa fa-archive" aria-hidden="true"></i> {% translate "Archive" %}
         </a>
       </div>
     {% endif %}
   </div>
-  <p class="text-muted">
-    {{ batch.description }}
-  </p>
 
-  <div>
+  <div class="mt-4">
     {% include "partials/m_batch_details.html" with batch_status=batch.status %}
   </div>
 </div>

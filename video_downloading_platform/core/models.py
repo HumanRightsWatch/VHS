@@ -162,9 +162,7 @@ class BatchRequest(models.Model):
 
     batch = models.ForeignKey(
         Batch,
-        on_delete=models.DO_NOTHING,
-        null=True,
-        blank=True
+        on_delete=models.DO_NOTHING
     )
     urls = models.TextField(
         help_text=_('One URL per line'),

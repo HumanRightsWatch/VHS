@@ -26,17 +26,17 @@
           <tr class="table-{{ batch.status_class }}">
             <td>{{ batch.download_requests.count }}</td>
             <td>{{ batch.name }}</td>
-            <td>{{ batch.owner }}</td>
+            <td><i class="fa fa-user" aria-hidden="true"></i> {{ batch.owner }}</td>
             <td>
               <span class="badge bg-{{ batch.status_class }}">
                 {{ batch.status }}
               </span>
             </td>
-            <td>{{ batch.created_at }}</td>
-            <td>{{ batch.updated_at }}</td>
+            <td><i class="fa fa-clock-o" aria-hidden="true"></i> {{ batch.created_at }}</td>
+            <td><i class="fa fa-clock-o" aria-hidden="true"></i> {{ batch.updated_at }}</td>
             <td>
               <a href="{% url 'batch_details' batch.id %}" class="btn btn-sm btn-primary" role="button">
-                {% translate "Details" %}
+                <i class="fa fa-search" aria-hidden="true"></i> {% translate "Details" %}
               </a>
             </td>
           </tr>
