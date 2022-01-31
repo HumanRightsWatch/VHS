@@ -1,152 +1,76 @@
 # How to deploy VHS on Azure
-Here is a step-by-step guide explaining how to deploy VHS as an App Service on Microsoft Azure.
+Here is a step-by-step guide explaining how to deploy VHS on Microsoft Azure.
 
-## Create an app service
-Add the top of you dashboard, click on **App Services**
+This guide assumes the following:
 
-![Select App Service](images/azure_1.png)
+* you already have a Linux virtual machine up and running within Azure
+* you can access it with SSH
+* Docker and docker-compose are installed on your VM
+* you have basic knowledge in Linux command line and Docker
 
-and then click on **Create app service** to host your VHS instance.
+## Get the deployment package
+Each time the code of VHS is updated, both the Docker image and the deployment package are automatically built.
 
-![Create an App Service](images/azure_2.png)
+To put the deployment package on your VM, on your computer:
 
-## Global configuration of the app service
-First, you have to carefully choose a name, this name will be the subdomain (`<name>.azurewebsites.net`) exposing your App Service. Then, select *Docker Container* and *Linux*.
+* browse https://github.com/HumanRightsWatch/VHS/actions/workflows/ci.yml
+* click on the latest successful build
+* save the `deployment-package` listed in the *Artifacts* section on your computer
+* copy it onto your VM using SSH - [a simple guide](https://www.ssh.com/academy/ssh/scp)
 
-![Configure the app service](images/azure_3.png)
+NB: due to GitHub limitation, we cannot provide a direct link to the latest version of the deployment package.
 
-Not illustrated here, you have to select a hosting plan for your app service at the bottom of the current page.
+Once you have uploaded the deployment package on your VM, connect to your VM using SSH and unzip the package `unzip deployment-package.zip`. Now you should have, at least, the following files on your VM: 
 
-## Configure Docker
-Since VHS is based on multiple services, they are defined in a single Docker Compose file. VHS Docker image is automatically built and [provided by GitHub](https://github.com/HumanRightsWatch/VHS/pkgs/container/vhs).
-
-So, in the Azure configuration form, choose:
-
-* Docker Compose
-* Private Registry
-
-Then specify `https://ghcr.io` as Docker registry URL. Finally, upload the `azure.yml` you can download from [VHS GitHub repository](https://github.com/HumanRightsWatch/VHS/blob/main/azure.yml).
-
-![Configure Docker](images/azure_6.png)
-
-## Monitoring and Tags
-You can skip those steps.
-
-## Review & Create
-Here is what the summary should look like.
-
-![Review & Create](images/azure_9.png)
-
-Click on **Create**
-
-## Configure VHS
-To configure VHS itself, click on **Configuration** listed in the left bar of the dashboard
-
-![Review & Create](images/azure_10.png)
-
-then click on **Advanced edit**.
-
-![Review & Create](images/azure_11.png)
-
-A JSON editor appears. First, adapt the following configuration according to your needs and then copy/paste it into the editor.
-
-```json
-  {
-    "name": "DJANGO_SETTINGS_MODULE",
-    "value": "config.settings.production",
-    "slotSetting": false
-  },
-  {
-    "name": "DJANGO_SECRET_KEY",
-    "value": "<randomly generated secret key>",
-    "slotSetting": false
-  },
-  {
-    "name": "DJANGO_ADMIN_URL",
-    "value": "<randomly generated string>/",
-    "slotSetting": false
-  },
-  {
-    "name": "DJANGO_ALLOWED_HOSTS",
-    "value": "<name of the App Service>.azurewebsites.net",
-    "slotSetting": false
-  },
-  {
-    "name": "DJANGO_SECURE_SSL_REDIRECT",
-    "value": "False",
-    "slotSetting": false
-  },
-  {
-    "name": "DJANGO_SERVER_EMAIL",
-    "value": "",
-    "slotSetting": false
-  },
-  {
-    "name": "DJANGO_ACCOUNT_ALLOW_REGISTRATION",
-    "value": "True",
-    "slotSetting": false
-  },
-  {
-    "name": "WEB_CONCURRENCY",
-    "value": "4",
-    "slotSetting": false
-  },
-  {
-    "name": "REDIS_URL",
-    "value": "redis://redis:6379/0",
-    "slotSetting": false
-  },
-  {
-    "name": "MINIO_ACCESS_KEY",
-    "value": "<randomly generated key>",
-    "slotSetting": false
-  },
-  {
-    "name": "MINIO_SECRET_KEY",
-    "value": "<randomly generated secret key>",
-    "slotSetting": false
-  },
-  {
-    "name": "POSTGRES_HOST",
-    "value": "postgres",
-    "slotSetting": false
-  },
-  {
-    "name": "POSTGRES_PORT",
-    "value": "5432",
-    "slotSetting": false
-  },
-  {
-    "name": "POSTGRES_DB",
-    "value": "video_downloading_platform",
-    "slotSetting": false
-  },
-  {
-    "name": "POSTGRES_USER",
-    "value": "<randomly generated user name>",
-    "slotSetting": false
-  },
-  {
-    "name": "POSTGRES_PASSWORD",
-    "value": "<randomly generated password>",
-    "slotSetting": false
-  },
-  {
-    "name": "ADMIN_PASSWORD",
-    "value": "<randomly generated password>",
-    "slotSetting": false
-  },
+```
+.
+├── azure.yml
+├── compose
+│   └── production
+│       ├── postgres
+│       │   ├── Dockerfile
+│       │   └── maintenance
+│       └── traefik
+│           ├── Dockerfile
+│           └── traefik.yml
+├── deployment-package.zip
+└── .env
 ```
 
-At the end, the JSON configuration should look like this:
+## Configure VHS prior to its deployment
+First, you have to adapt the file `.env` to your environment. To do so, edit it and set the value of the following variables:
 
-![JSON configuration](images/azure_12.png)
+* `DJANGO_SECRET_KEY`: a random string/password
+* `DJANGO_ADMIN_URL`: a random string, the URI of the administration panel thar will be accessible at `https://{DJANGO_ALLOWED_HOSTS}/{DJANGO_ADMIN_URL}`
+* `DJANGO_ALLOWED_HOSTS`: the domain name pointing to your VHS instance
+* `MINIO_ACCESS_KEY`: a random string/password
+* `MINIO_SECRET_KEY`: a random string/password
+* `POSTGRES_USER`: a random string/password, the Postgres user dedicated to VHS
+* `POSTGRES_PASSWORD`: a random string/password associated to the Postgres user
+* `AZURE_TENANT`: the ID of the tenant your VHS instance authentication belongs to
+* `ADMIN_PASSWORD`: a random password for the local administration account (username: `admin`)
 
-# Persistence
-In order to keep data across updates and restarts, we set `WEBSITES_ENABLE_APP_SERVICE_STORAGE` to `true`
+Next, you have to configure the load balancer which will be the entrypoint from the Internet. To do so, edit the file `compose/production/traefik/traefik.yml` and set the value of:
 
-![JSON configuration](images/azure_13.png)
-![JSON configuration](images/azure_14.png)
+* `22:       email: "<administrator's email>"`: administrator's email address used by Let's Encrypt to reach out
+* `31:      rule: "Host(`<the domain name pointing to your VHS instance>`)"`: the same value as `DJANGO_ALLOWED_HOSTS` set in the previous step
 
-# Save changes
-Finally, save your changes. Your app service will restart within few minutes and will be accessible at `<your app service name>.azurewebsites.net`.
+Congrats! You have configured VHS.
+
+## Deploy
+The final step is starting the VHS stack, to do so simply run the following command:
+```shell
+docker-compose -f azure.yml up -d
+```
+
+After few seconds or minutes, VHS would be accessible at the domain you set before.
+
+You can check the logs at any time by running the following command: 
+```shell
+docker-compose -f azure.yml logs
+```
+
+VHS will be automatically updated on a daily basis.
+
+## Configure the SSO
+At its first start, VHS creates an administrator user account with the password you specified earlier. First, connect to the administration panel by browsing `https://{DJANGO_ALLOWED_HOSTS}/{DJANGO_ADMIN_URL}` (username = `admin`). Next, click on *Social apps* > *Add a social app*, select *Microsoft Graph* in the provider list and fill the fields *Client ID* and *Secret key* with the information provided by your Azure administrator.
