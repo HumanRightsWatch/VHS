@@ -1,23 +1,14 @@
 import os
-from zipfile import ZipFile
+import shutil
 
-print(os.environ.get('GITHUB_WORKSPACE'))
 base_dir = os.environ.get('GITHUB_WORKSPACE')
+base_dir = '/home/esther/Gre/Make/HRW/video_downloading_platform'
+dest_dir = f'{base_dir}/deployment_package'
+rel_dest_dir = os.path.relpath(dest_dir, base_dir)
 
-
-def rel(abs_path, path):
-    return os.path.relpath(path, abs_path)
-
-
-def add_file(file_path, base_dir, zip_file):
-    zip_file.write(file_path, rel(base_dir, file_path))
-
-
-with ZipFile(f'{base_dir}/deployment_package.zip', 'w') as zip_file:
-    add_file(f'{base_dir}/.env', base_dir, zip_file)
-    add_file(f'{base_dir}/azure.yml', base_dir, zip_file)
-    for folder_name, sub_folders, filenames in os.walk('../compose'):
-        for filename in filenames:
-            if 'traefik' in folder_name:
-                file_path = os.path.join(folder_name, filename)
-                add_file(file_path, base_dir, zip_file)
+os.makedirs(dest_dir, exist_ok=True)
+shutil.copy(f'{base_dir}/.env', dest_dir)
+shutil.copy(f'{base_dir}/azure.yml', dest_dir)
+shutil.copytree(f'{base_dir}/compose/production/traefik', f'{dest_dir}/compose/production/traefik', dirs_exist_ok=True)
+shutil.copytree(f'{base_dir}/compose/production/postgres', f'{dest_dir}/compose/production/postgres',
+                dirs_exist_ok=True)
