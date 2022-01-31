@@ -70,7 +70,7 @@ jobs:
           python-version: 3.8
 
       - name: Create package
-      - run: |
+        run: |
           python ${GITHUB_WORKSPACE}/.github/build_deployment_package.py
 
       - name: Archive deployment package
