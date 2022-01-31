@@ -8,7 +8,7 @@ volumes:
 
 services:
   django:
-    build:
+    build: &django
       context: .
       dockerfile: ./compose/production/django/Dockerfile
     image: video_downloading_platform_production_django
@@ -22,7 +22,7 @@ services:
     command: /start
 
   postgres:
-    build: &django
+    build:
       context: .
       dockerfile: ./compose/production/postgres/Dockerfile
     image: video_downloading_platform_production_postgres

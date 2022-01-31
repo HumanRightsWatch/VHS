@@ -57,3 +57,24 @@ jobs:
 
       - name: Tear down the Stack
         run:  docker-compose -f local.yml down
+
+  build-deployment-package:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code Repository
+        uses: actions/checkout@v2
+
+      - name: Set up Python 3.8
+        uses: actions/setup-python@v2
+        with:
+          python-version: 3.8
+
+      - name: Create package
+      - run: |
+          python ${GITHUB_WORKSPACE}/.github/build_deployment_package.py
+
+      - name: Archive deployment package
+        uses: actions/upload-artifact@v2
+        with:
+          name: deployment-package
+          path: deployment_package.zip

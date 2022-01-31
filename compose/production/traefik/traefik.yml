@@ -19,7 +19,7 @@ certificatesResolvers:
   letsencrypt:
     # https://docs.traefik.io/master/https/acme/#lets-encrypt
     acme:
-      email: "u039b@example.com"
+      email: "<administrator's email>"
       storage: /etc/traefik/acme/acme.json
       # https://docs.traefik.io/master/https/acme/#httpchallenge
       httpChallenge:
@@ -28,7 +28,7 @@ certificatesResolvers:
 http:
   routers:
     web-secure-router:
-      rule: "Host(`example.com`) || Host(`www.example.com`)"
+      rule: "Host(`<the domain name pointing to your VHS instance>`)"
       entryPoints:
         - web-secure
       middlewares:
