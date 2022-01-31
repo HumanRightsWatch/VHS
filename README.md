@@ -53,7 +53,7 @@ To learn how to use live reloading and Sass CSS compilation, please refer
 to [the Cookiecutter documentation](http://cookiecutter-django.readthedocs.io/en/latest/live-reloading-and-sass-compilation.html).
 
 ## Deployment
-The following details how to deploy this application.
+The following details how to deploy this application. After having deployed VHS, please refer to the [administration guide](docs/administration.md).
 
 ### Docker
 To learn how to deploy this application with Docker, please refer
