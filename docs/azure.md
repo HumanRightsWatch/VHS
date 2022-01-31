@@ -53,7 +53,7 @@ First, you have to adapt the file `.env` to your environment. To do so, edit it 
 Next, you have to configure the load balancer which will be the entrypoint from the Internet. To do so, edit the file `compose/production/traefik/traefik.yml` and set the value of:
 
 * `22:       email: "<administrator's email>"`: administrator's email address used by Let's Encrypt to reach out
-* `31:      rule: "Host(`<the domain name pointing to your VHS instance>`)"`: the same value as `DJANGO_ALLOWED_HOSTS` set in the previous step
+* `31:      rule: "Host(the domain name pointing to your VHS instance)"`: the same value as `DJANGO_ALLOWED_HOSTS` set in the previous step
 
 Congrats! You have configured VHS.
 
