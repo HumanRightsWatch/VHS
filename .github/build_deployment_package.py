@@ -2,7 +2,6 @@ import os
 import shutil
 
 base_dir = os.environ.get('GITHUB_WORKSPACE')
-base_dir = '/home/esther/Gre/Make/HRW/video_downloading_platform'
 dest_dir = f'{base_dir}/deployment_package'
 rel_dest_dir = os.path.relpath(dest_dir, base_dir)
 
