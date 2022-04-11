@@ -1,4 +1,6 @@
 from django import forms
+from django.core.exceptions import ValidationError
+from django.utils.translation import gettext_lazy as _
 
 from video_downloading_platform.core.models import Batch, BatchRequest
 
@@ -39,3 +41,27 @@ class BatchForm(forms.ModelForm):
         widgets = {
             'description': forms.Textarea(attrs={'rows': 2, 'cols': 20}),
         }
+
+
+
+def validate_batch(batch_id):
+    print(batch_id)
+    if not Batch.objects.filter(id=batch_id).exists():
+        raise ValidationError("Selected collection does not exists")
+
+
+class UploadForm(forms.Form):
+    batch = forms.ChoiceField(label=_('Collection'))
+    name = forms.CharField(label=_('Filename'), max_length=100)
+    origin = forms.CharField(label=_('Origine'), max_length=100, required=False)
+    file = forms.FileField()
+
+    def clean_batch(self):
+        batch_id = self.cleaned_data["batch"]
+        if not Batch.objects.filter(id=batch_id).exists():
+            raise ValidationError("Selected collection does not exists")
+        return Batch.objects.get(id=batch_id)
+
+    def set_user(self, connected_user):
+        if connected_user:
+            self.fields['batch'].choices = [(c.id, c.name) for c in Batch.get_users_open_batches(connected_user)]

@@ -33,7 +33,6 @@ function mark_notif_as_read(id) {
 
 function notification_toaster_callback(data) {
     const toaster = jQuery('#notification_toaster');
-    console.log('osidhf iusdhfiusdh fiuh');
     jQuery.get('/notifications', function (msg) {
         toaster.html(msg);
         reapply_toaster_visibility();

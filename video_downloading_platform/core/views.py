@@ -1,23 +1,115 @@
+import mimetypes
+import traceback
+from tempfile import NamedTemporaryFile
+
 from django.conf import settings
-from django.forms import model_to_dict
-from django.shortcuts import render, redirect
 from django.contrib import messages
+from django.contrib.auth.decorators import login_required
+from django.core.files import File
+from django.forms import model_to_dict
+from django.http import HttpResponse, JsonResponse
+from django.shortcuts import render, redirect
 from django.urls import reverse_lazy
 from django.utils.translation import gettext as _
-from django.contrib.auth.decorators import login_required
-from django.http import HttpResponse, JsonResponse
+from notifications.signals import notify
 from notifications.utils import id2slug
 
-from video_downloading_platform.core.forms import BatchForm, BatchRequestForm
+from video_downloading_platform.core.forms import BatchForm, BatchRequestForm, UploadForm
 from video_downloading_platform.core.models import Batch, DownloadRequest, DownloadedContent, DownloadReport
+from video_downloading_platform.core.tasks import hash_file, create_zip_archive
 
+
+def handle_file_upload(request, upload_form):
+    filename = str(request.FILES['file'])
+    user = request.user
+    batch = upload_form.cleaned_data.get('batch')
+    download_request = DownloadRequest(
+        batch=batch,
+        status=DownloadRequest.Status.PROCESSING,
+        url='http://dummy.url.local',
+        owner=user
+    )
+    download_request.save()
+    download_report = DownloadReport(
+        download_request=download_request,
+        owner=user
+    )
+    download_report.save()
+    file = request.FILES['file']
+    try:
+        with NamedTemporaryFile() as tmp:
+            for chunk in file.chunks():
+                tmp.write(chunk)
+            tmp.seek(0)
+            sha256 = hash_file(tmp.name)
+            mime_type = mimetypes.MimeTypes().guess_type(tmp.name)[0]
+            if not mime_type:
+                mime_type = 'application/octet-stream'
+            metadata = {
+                'original_name': filename,
+                'preferred_name': upload_form.cleaned_data['name'],
+                'sha256': sha256,
+                'mime_type': mime_type,
+                'origin': upload_form.cleaned_data['origin'],
+            }
+            downloaded_content = DownloadedContent(
+                download_report=download_report,
+                owner=user,
+                sha256=sha256,
+                name=filename,
+                metadata=metadata,
+                mime_type=mime_type
+            )
+            downloaded_content.save()
+            mode = 'rb'
+            content_file = File(tmp)
+            downloaded_content.content.save(filename, content_file)
+            downloaded_content.save()
+        download_request.status = DownloadRequest.Status.SUCCEEDED
+        download_request.save()
+        create_zip_archive(download_report.id)
+        actions = [
+            {
+                'url': reverse_lazy('batch_details', args=[download_request.batch.id]) + '#' + str(
+                    download_request.id),
+                'title': 'View files'}
+        ]
+        notify.send(user, recipient=user, verb='',
+                    description='Your files have been successfully uploaded',
+                    public=False,
+                    actions=actions)
+    except Exception as e:
+        print(e)
+        download_report.in_error = True
+        error_message = download_report.error_message
+        if not error_message:
+            error_message = ''
+        error_message += '\n' + traceback.format_exc()
+        download_report.error_message = error_message
+        download_report.save()
+        download_request.status = DownloadRequest.Status.FAILED
+        download_request.save()
+        actions = [
+            {
+                'url': reverse_lazy('batch_details', args=[download_request.batch.id]) + '#' + str(download_request.id),
+                'title': 'View details'}
+        ]
+        notify.send(user, recipient=user, verb='',
+                    level='error',
+                    description='Your request has failed',
+                    public=False,
+                    actions=actions)
 
 @login_required
 def home_view(request):
     user = request.user
     dl_request_form = BatchRequestForm()
     dl_request_form.set_user(user)
+
     batch_form = BatchForm()
+
+    ul_request_form = UploadForm()
+    ul_request_form.set_user(user)
 
     if request.method == 'POST':
         if 'save_batch' in request.POST:
@@ -57,6 +149,13 @@ def home_view(request):
                 messages.success(request, _('Your request has been successfully submitted.'))
             else:
                 dl_request_form = f
+        elif 'request_upload' in request.POST:
+            f = UploadForm(request.POST, request.FILES)
+            f.set_user(user)
+            if f.is_valid():
+                handle_file_upload(request, f)
+            else:
+                ul_request_form = f
     else:
         pass
 
@@ -69,6 +168,7 @@ def home_view(request):
         'pages/home.html',
         {
             'dl_request_form': dl_request_form,
+            'ul_request_form': ul_request_form,
             'batch_form': batch_form,
             'users_batches': users_batches,
         })

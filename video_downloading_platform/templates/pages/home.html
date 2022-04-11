@@ -5,22 +5,49 @@
 
 {% block content %}
   <div class="row">
-     <div class="col-md-12 mb-4">
-       <img class="img-fluid" src="{% static 'images/header.jpg' %}" alt="VHS header">
-       <h4 class="mt-4 mb-4">{% translate "Welcome to VHS. This tool will help you to download videos from over 1000 websites including social media platforms. Click on the About <strong>section</strong> in the menu above to learn more about the tool and for frequently asked questions." %}</h4>
-     </div>
+    <div class="col-md-12 mb-4">
+      <img class="img-fluid" src="{% static 'images/header.jpg' %}" alt="VHS header">
+      <h4
+        class="mt-4 mb-4">{% translate "Welcome to VHS. This tool will help you to download videos from over 1000 websites including social media platforms. Click on the About <strong>section</strong> in the menu above to learn more about the tool and for frequently asked questions." %}</h4>
+    </div>
   </div>
 
   <div class="row">
     <div class="col-md-5">
-      <h2>{% translate "My downloads" %}</h2>
-      <form method="post">
-        {% csrf_token %}
-        {{ dl_request_form|crispy }}
-        <button class="btn btn-primary" type="submit" name="request_download">{% translate "Submit" %}</button>
-      </form>
-
+      <ul class="nav nav-tabs" id="actionTab" role="tablist">
+        <li class="nav-item" role="presentation">
+          <button class="nav-link {% if not ul_request_form.errors %}active{% endif %} h4" id="download-tab" data-bs-toggle="tab" data-bs-target="#download-tab-form"
+                  type="button" role="tab" aria-controls="download-tab-form"
+                  aria-selected="{% if ul_request_form.errors %}false{% else %}true{% endif %}">
+            {% translate "Download" %}
+          </button>
+        </li>
+        <li class="nav-item" role="presentation">
+          <button class="nav-link h4 {% if ul_request_form.errors %}active{% endif %}" id="upload-tab" data-bs-toggle="tab" data-bs-target="#upload-tab-form" type="button"
+                  role="tab" aria-controls="upload-tab-form"
+                  aria-selected="{% if ul_request_form.errors %}true{% else %}false{% endif %}">
+            {% translate "Upload" %}
+          </button>
+        </li>
+      </ul>
+      <div class="tab-content" id="myTabContent">
+        <div class="tab-pane fade {% if not ul_request_form.errors %}show active{% endif %}" id="download-tab-form" role="tabpanel" aria-labelledby="download-tab">
+          <form method="post">
+            {% csrf_token %}
+            {{ dl_request_form|crispy }}
+            <button class="btn btn-primary" type="submit" name="request_download">{% translate "Submit" %}</button>
+          </form>
+        </div>
+        <div class="tab-pane fade{% if ul_request_form.errors %}show active{% endif %}" id="upload-tab-form" role="tabpanel" aria-labelledby="upload-tab">
+          <form method="post" enctype="multipart/form-data">
+            {% csrf_token %}
+            {{ ul_request_form|crispy }}
+            <button class="btn btn-primary" type="submit" name="request_upload">{% translate "Submit" %}</button>
+          </form>
+        </div>
+      </div>
     </div>
+
     <div class="col-md-7">
       <h2>
         {% translate "My collections" %}
@@ -46,7 +73,8 @@
                 <div class="col">
                   <span class="h5">{{ batch.name }}</span><br>
                   <span class="small"><i class="fa fa-user" aria-hidden="true"></i> {{ batch.owner }}</span>
-                  <span class="small"><i class="fa fa-clock-o" aria-hidden="true"></i> {{ batch.updated_at|naturaltime }}</span>
+                  <span class="small"><i class="fa fa-clock-o"
+                                         aria-hidden="true"></i> {{ batch.updated_at|naturaltime }}</span>
                 </div>
                 <div class="col-md-4 align-right h4">
                   <span class="badge bg-secondary">

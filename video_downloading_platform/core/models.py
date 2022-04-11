@@ -109,7 +109,6 @@ class Batch(models.Model):
     def get_users_batches(user):
         try:
             user_groups = user.groups.values_list('name', flat=True)
-            print(user_groups)
             if 'admin' in user_groups:
                 return Batch.objects.all()
             else:
@@ -186,7 +185,7 @@ class DownloadRequest(models.Model):
     REQUEST_TYPE = [
         (VIDEO, _('Video')),
         (AUDIO, _('Audio')),
-        (WEB_PAGE, _('Web page')),
+        (WEB_PAGE, _('Webpage')),
     ]
 
     id = models.UUIDField(
@@ -302,7 +301,7 @@ class DownloadReport(models.Model):
 
     def get_thumbnail(self):
         try:
-            content = self.downloadedcontent_set.filter(mime_type__in=['image/jpeg', 'image/webp']).first()
+            content = self.downloadedcontent_set.filter(mime_type__in=['image/jpeg', 'image/png', 'image/webp']).first()
             if content:
                 url = reverse_lazy("get_downloaded_file", kwargs={'content_id': content.id})
                 return url

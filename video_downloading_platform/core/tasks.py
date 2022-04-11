@@ -31,6 +31,19 @@ def hash_file(filename):
     return h_sha256.hexdigest()
 
 
+def get_mimetype(filename):
+    mime_type = mimetypes.MimeTypes().guess_type(filename)[0]
+    if not mime_type:
+        mime_type = 'application/octet-stream'
+    if filename.endswith('.webp'):
+        mime_type = 'image/webp'
+    if filename.endswith('.jpeg'):
+        mime_type = 'image/jpeg'
+    if filename.endswith('.png'):
+        mime_type = 'image/png'
+    return mime_type
+
+
 def run_download_request(download_request_id):
     try:
         download_request = DownloadRequest.objects.get(id=download_request_id)
@@ -59,14 +72,10 @@ def run_download_request(download_request_id):
                 cleaned_name = f.replace(tmp_dir, '')
                 if cleaned_name.startswith('/'):
                     cleaned_name = cleaned_name[1:]
-                mime_type = mimetypes.MimeTypes().guess_type(f)[0]
+                mime_type = get_mimetype(f)
                 metadata = {}
                 if cleaned_name.endswith('.info.json'):
                     metadata = json.load(open(f, mode='r'))
-                if not mime_type:
-                    mime_type = 'application/octet-stream'
-                    if cleaned_name.endswith('.webp'):
-                        mime_type = 'image/webp'
 
                 downloaded_content = DownloadedContent(
                     download_report=download_report,
