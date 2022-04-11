@@ -65,6 +65,9 @@ def run_download_request(download_request_id):
                     metadata = json.load(open(f, mode='r'))
                 if not mime_type:
                     mime_type = 'application/octet-stream'
+                    if cleaned_name.endswith('.webp'):
+                        mime_type = 'image/webp'
+
                 downloaded_content = DownloadedContent(
                     download_report=download_report,
                     owner=owner,
