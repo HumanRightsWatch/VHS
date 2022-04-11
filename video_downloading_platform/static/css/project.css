@@ -12867,3 +12867,15 @@ textarea.form-control-lg {
   border-color: #eed3d7;
   color: #b94a48;
 }
+
+.blurred-image {
+  -webkit-filter: blur(8px);
+          filter: blur(8px);
+  -webkit-filter: blur(0.5rem);
+          filter: blur(0.5rem);
+}
+
+.blurred-image:hover {
+  -webkit-filter: blur(0);
+          filter: blur(0);
+}

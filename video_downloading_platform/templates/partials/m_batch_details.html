@@ -55,7 +55,7 @@
           {% with thumbnail=request.report.first.get_thumbnail %}
             {% if thumbnail and batch_status != "ARCHIVED" %}
               <div class="col-md-2">
-                <img src="{{ thumbnail }}" class="img-fluid rounded-start" alt="...">
+                <img src="{{ thumbnail }}" class="img-fluid rounded-start blurred-image" alt="...">
               </div>
             {% endif %}
           {% endwith %}

@@ -38,3 +38,12 @@ $red: #b94a48;
   border-color: $dark-pink;
   color: $red;
 }
+
+
+.blurred-image {
+  filter: blur(0.5rem);
+}
+
+.blurred-image:hover {
+  filter: blur(0);
+}
