@@ -45,7 +45,6 @@ class BatchForm(forms.ModelForm):
 
 
 def validate_batch(batch_id):
-    print(batch_id)
     if not Batch.objects.filter(id=batch_id).exists():
         raise ValidationError("Selected collection does not exists")
 
