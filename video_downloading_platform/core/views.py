@@ -4,7 +4,7 @@ from django.shortcuts import render, redirect
 from django.contrib import messages
 from django.urls import reverse_lazy
 from django.utils.translation import gettext as _
-
+from django.contrib.auth.decorators import login_required
 from django.http import HttpResponse, JsonResponse
 from notifications.utils import id2slug
 
@@ -12,11 +12,9 @@ from video_downloading_platform.core.forms import BatchForm, BatchRequestForm
 from video_downloading_platform.core.models import Batch, DownloadRequest, DownloadedContent, DownloadReport
 
 
+@login_required
 def home_view(request):
     user = request.user
-    if not user.is_authenticated:
-        return redirect(reverse_lazy(settings.LOGIN_URL))
-
     dl_request_form = BatchRequestForm()
     dl_request_form.set_user(user)
     batch_form = BatchForm()
@@ -76,10 +74,9 @@ def home_view(request):
         })
 
 
+@login_required
 def my_batches_view(request):
     user = request.user
-    if not user.is_authenticated:
-        return redirect(reverse_lazy(settings.LOGIN_URL))
     user_groups = user.groups.values_list('name', flat=True)
     admin = 'admin' in user_groups
     batches = []
@@ -106,10 +103,9 @@ def close_batch_view(request, batch_id):
     return redirect(request.META.get('HTTP_REFERER'))
 
 
+@login_required
 def archive_batch_view(request, batch_id):
     user = request.user
-    if not user.is_authenticated:
-        return redirect(reverse_lazy(settings.LOGIN_URL))
     if batch_id:
         batch = Batch.objects.get(id=batch_id)
         batch.archive()
@@ -117,10 +113,9 @@ def archive_batch_view(request, batch_id):
     return redirect(request.META.get('HTTP_REFERER'))
 
 
+@login_required
 def batch_details_view(request, batch_id):
     user = request.user
-    if not user.is_authenticated:
-        return redirect(reverse_lazy(settings.LOGIN_URL))
     user_groups = user.groups.values_list('name', flat=True)
     admin = 'admin' in user_groups
     batch = Batch.objects.get(id=batch_id)
@@ -133,20 +128,18 @@ def batch_details_view(request, batch_id):
         })
 
 
+@login_required
 def get_downloaded_content_view(request, content_id):
     user = request.user
-    if not user.is_authenticated:
-        return redirect(reverse_lazy(settings.LOGIN_URL))
     content = DownloadedContent.objects.get(id=content_id)
     response = HttpResponse(content.content, content_type=content.mime_type)
     response['Content-Disposition'] = 'inline; filename=' + content.name
     return response
 
 
+@login_required
 def get_downloaded_file_view(request, content_id):
     user = request.user
-    if not user.is_authenticated:
-        return redirect(reverse_lazy(settings.LOGIN_URL))
     content = DownloadedContent.objects.get(id=content_id)
     try:
         return HttpResponse(content.content, content_type=content.mime_type)
@@ -193,10 +186,9 @@ def get_unread_notifications_view(request):
     )
 
 
+@login_required
 def get_batch_status_view(request):
     user = request.user
-    if not user.is_authenticated:
-        return redirect(reverse_lazy(settings.LOGIN_URL))
     user_groups = user.groups.values_list('name', flat=True)
     admin = 'admin' in user_groups
     if admin:
@@ -231,10 +223,9 @@ def get_batch_status_view(request):
     return JsonResponse(statuses, safe=False)
 
 
+@login_required
 def get_report_archive_view(request, report_id):
     user = request.user
-    if not user.is_authenticated:
-        return redirect(reverse_lazy(settings.LOGIN_URL))
     report = DownloadReport.objects.get(id=report_id)
     response = HttpResponse(report.archive, content_type='application/zip')
     response['Content-Disposition'] = 'inline; filename=' + report.archive.name
