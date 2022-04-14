@@ -1,15 +1,12 @@
 {% extends "base.html" %}
 {% load crispy_forms_tags %}
 {% load humanize %}
-{% load i18n static %}
+{% load i18n %}
+{% load static %}
 
 {% block content %}
   <div class="row">
-    <div class="col-md-12 mb-4">
-      <img class="img-fluid" src="{% static 'images/header.jpg' %}" alt="VHS header">
-      <h4
-        class="mt-4 mb-4">{% translate "Welcome to VHS. This tool will help you to download videos from over 1000 websites including social media platforms. Click on the About <strong>section</strong> in the menu above to learn more about the tool and for frequently asked questions." %}</h4>
-    </div>
+    {% include "partials/home_header.html" %}
   </div>
 
   <div class="row">

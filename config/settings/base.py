@@ -90,6 +90,7 @@ SOCIALACCOUNT_PROVIDERS = {
 LOCAL_APPS = [
     "video_downloading_platform.users.apps.UsersConfig",
     "video_downloading_platform.core.apps.CoreConfig",
+    "video_downloading_platform.hrw_customization.apps.HRWConfig",
 ]
 # https://docs.djangoproject.com/en/dev/ref/settings/#installed-apps
 INSTALLED_APPS = DJANGO_APPS + THIRD_PARTY_APPS + LOCAL_APPS
@@ -188,12 +189,13 @@ TEMPLATES = [
         "BACKEND": "django.template.backends.django.DjangoTemplates",
         # https://docs.djangoproject.com/en/dev/ref/settings/#template-dirs
         "DIRS": [str(APPS_DIR / "templates")],
+        # 'APP_DIRS': True,
         "OPTIONS": {
             # https://docs.djangoproject.com/en/dev/ref/settings/#template-loaders
             # https://docs.djangoproject.com/en/dev/ref/templates/api/#loader-types
             "loaders": [
-                "django.template.loaders.filesystem.Loader",
                 "django.template.loaders.app_directories.Loader",
+                "django.template.loaders.filesystem.Loader",
             ],
             # https://docs.djangoproject.com/en/dev/ref/settings/#template-context-processors
             "context_processors": [
