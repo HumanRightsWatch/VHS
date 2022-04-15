@@ -27,35 +27,21 @@
               {% include "partials/m_modal_error.html" with id=request.id error_message=request.report.first.error_message %}
             {% endif %}
             <span>{% translate "Downloaded content:" %}</span>
-            <ul>
-              {% for content in request.report.first.downloadedcontent_set.all %}
-                <li>
-                  {% if batch_status == "ARCHIVED" %}
-                    {{ content.name }}
-                  {% else %}
-                    <a href="{% url "get_downloaded_content" content.id %}" target="_blank">
-                      {{ content.name }}
-                    </a>
-                    <br>
-
-                    {% if admin %}
-                      <ul class="list-unstyled small text-muted">
-                        <li>Downloaded at: {{ content.created_at }}</li>
-                        <li>Size: {{ content.content.size|filesizeformat }}</li>
-                        <li>SHA256: <samp>{{ content.sha256 }}</samp></li>
-                      </ul>
-                    {% endif %}
-                  {% endif %}
-                </li>
-              {% empty %}
-                <li>{% translate "nothing :(" %}</li>
-              {% endfor %}
-            </ul>
+            {% include "partials/m_downloaded_contents.html" %}
           </div>
           {% with thumbnail=request.report.first.get_thumbnail %}
             {% if thumbnail and batch_status != "ARCHIVED" %}
-              <div class="col-md-2">
-                <img src="{{ thumbnail }}" class="img-fluid rounded-start blurred-image" alt="...">
+              <div class="col-md-2 text-center">
+                <div>
+                  <img src="{{ thumbnail }}" class="img-fluid rounded-start blurred-image" alt="...">
+                </div>
+                <div class="mt-2">
+                  {% if request.report.first.archive %}
+                    <a href="{% url "get_report_archive" request.report.first.id %}" class="btn btn-secondary">
+                      <i class="fa fa-download" aria-hidden="true"></i> {% trans "Download archive" %}
+                    </a>
+                  {% endif %}
+                </div>
               </div>
             {% endif %}
           {% endwith %}
@@ -63,24 +49,8 @@
       </div>
       <div class="card-footer">
         <div class="row">
-          <div class="col-md-8">
-            {% for content in request.report.first.downloadedcontent_set.all %}
-              {% if content.metadata %}
-                <a href="#" data-bs-toggle="modal" data-bs-target="#metadataModal-{{ request.id }}"
-                   class="btn btn-sm btn-secondary">
-                  <i class="fa fa-eye" aria-hidden="true"></i> {% translate "View metadata" %}
-                </a>
-                {% include "partials/m_modal_metadata.html" with id=request.id metadata=content.metadata %}
-              {% endif %}
-            {% endfor %}
-            {% if request.report.first.archive %}
-              <a href="{% url "get_report_archive" request.report.first.id %}" class="btn btn-sm btn-secondary">
-                <i class="fa fa-download" aria-hidden="true"></i> {% trans "Download archive" %}
-              </a>
-            {% endif %}
-          </div>
-          <div class="col-md-4">
-            <p class="text-md-end">
+          <div class="col text-md-end">
+            <span>
               {% translate "Status:" %}
               {% if request.status == 'SUCCEEDED' %}
                 <span class="badge bg-success">{{ request.get_status_display }}</span>
@@ -91,7 +61,7 @@
               {% endif %}
               - {% trans "updated" %}
               <span>{{ request.updated_at|naturaltime }}</span>
-            </p>
+            </span>
           </div>
         </div>
       </div>

@@ -1,19 +1,19 @@
 {% load i18n %}
 
-<div class="modal fade" id="metadataModal-{{ id }}" tabindex="-1"
-     aria-labelledby="metadataModalLabel-{{ id }}"
+<div class="modal fade" id="metadataModal-{{ id }}-{{ ext }}" tabindex="-1"
+     aria-labelledby="metadataModalLabel-{{ id }}-{{ ext }}"
      aria-hidden="true">
   <div class="modal-dialog modal-lg">
     <div class="modal-content">
       <div class="modal-header">
-        <h5 class="modal-title" id="metadataModalLabel-{{ id }}">Metadata</h5>
+        <h5 class="modal-title" id="metadataModalLabel-{{ id }}-{{ ext }}">Metadata</h5>
         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
       </div>
-      <div class="modal-body small">
+      <div class="modal-body modal-lg small">
         <dl class="row">
           {% for key, value in metadata.items %}
-            <dt class="col-sm-3">{{ key }}</dt>
-            <dd class="col-sm-9"><samp>{{ value }}</samp></dd>
+            <dt class="col-md-6">{{ key }}</dt>
+            <dd class="col-md-6"><samp>{{ value }}</samp></dd>
           {% endfor %}
         </dl>
       </div>

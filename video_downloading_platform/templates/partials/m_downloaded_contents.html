@@ -1,0 +1,66 @@
+{% load i18n %}
+{% load vhs_filters %}
+
+{% for content in request.report.first.downloadedcontent_set.all %}
+  <div class="rounded border p-2 mb-2">
+    <div class="row">
+      <div class="col-md-12 fs-5 text-primary ">
+        <i class="fa fa-file"></i> <samp>{{ content.name }}</samp>
+      </div>
+    </div>
+    <div class="row">
+      <div class="col-md-5">
+        <ul class="list-unstyled small text-muted mb-0">
+          <li>Download date: {{ content.created_at }}</li>
+          {% if content.content %}
+          <li>Size: {{ content.content.size|filesizeformat }}</li>
+          {% endif %}
+          <li>MD5: <samp>{{ content.md5 }}</samp></li>
+        </ul>
+      </div>
+      <div class="col">
+        <ul class="list-unstyled small text-muted mb-0">
+          {% if content.exif_data %}
+          <li>Modification date: {{ content.exif_data|hash_d:"File:FileModifyDate" }}</li>
+          {% endif %}
+          <li>Mime type: {{ content.mime_type }}</li>
+          <li>SHA256: <samp>{{ content.sha256 }}</samp></li>
+        </ul>
+      </div>
+      <div class="col-md-1 align-right">
+        <div>
+          {% if batch_status != "ARCHIVED" %}
+            <a href="{% url "get_downloaded_content" content.id %}" target="_blank"
+               class="btn btn-primary">
+              <i class="fa fa-download" aria-hidden="true"></i> {% translate "Download" %}
+            </a>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+    {% if content.metadata and content.exif_data %}
+      <div class="row">
+        <div class="col">
+          {% if content.metadata %}
+            <a href="#" data-bs-toggle="modal" data-bs-target="#metadataModal-{{ content.id }}-meta"
+               class="btn btn-sm btn-outline-secondary">
+              <i class="fa fa-eye" aria-hidden="true"></i> {% translate "View metadata" %}
+            </a>
+            {% include "partials/m_modal_metadata.html" with id=content.id metadata=content.metadata ext="meta" %}
+          {% endif %}
+          {% if content.exif_data %}
+            <a href="#" data-bs-toggle="modal" data-bs-target="#metadataModal-{{ content.id }}-exif"
+               class="btn btn-sm btn-outline-secondary">
+              <i class="fa fa-eye" aria-hidden="true"></i> {% translate "View exif" %}
+            </a>
+            {% include "partials/m_modal_metadata.html" with id=content.id metadata=content.exif_data ext="exif" %}
+          {% endif %}
+        </div>
+      </div>
+    {% endif %}
+  </div>
+
+
+{% empty %}
+  <p>{% translate "nothing :(" %}</p>
+{% endfor %}
