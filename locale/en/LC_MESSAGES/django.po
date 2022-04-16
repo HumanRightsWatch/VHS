@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2022-01-28 12:35+0000\n"
+"POT-Creation-Date: 2022-04-16 14:50+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -22,152 +22,185 @@ msgstr ""
 msgid "Core"
 msgstr ""
 
-#: video_downloading_platform/core/models.py:40
+#: video_downloading_platform/core/forms.py:58
+msgid "Collection"
+msgstr ""
+
+#: video_downloading_platform/core/forms.py:59
+msgid "Filename"
+msgstr ""
+
+#: video_downloading_platform/core/forms.py:61
+msgid "Description"
+msgstr ""
+
+#: video_downloading_platform/core/models.py:43
 msgid "Open"
 msgstr ""
 
-#: video_downloading_platform/core/models.py:41
+#: video_downloading_platform/core/models.py:44
 msgid "Closed"
 msgstr ""
 
-#: video_downloading_platform/core/models.py:42
+#: video_downloading_platform/core/models.py:45
 msgid "Archived"
 msgstr ""
 
-#: video_downloading_platform/core/models.py:48
+#: video_downloading_platform/core/models.py:51
 msgid "Unique identifier of your collection."
 msgstr ""
 
-#: video_downloading_platform/core/models.py:53
+#: video_downloading_platform/core/models.py:56
 msgid "Creation date of your collection."
 msgstr ""
 
-#: video_downloading_platform/core/models.py:57
+#: video_downloading_platform/core/models.py:60
 msgid "Latest modification of your collection."
 msgstr ""
 
-#: video_downloading_platform/core/models.py:67
+#: video_downloading_platform/core/models.py:70
 msgid "name"
 msgstr ""
 
-#: video_downloading_platform/core/models.py:68
+#: video_downloading_platform/core/models.py:71
 msgid ""
 "Give a meaningful name to your collection. We suggest the name of your "
 "project, date, your initials separated by underscores. For example "
 "Ariha_Syria_20_Nov_2022_GI."
 msgstr ""
 
-#: video_downloading_platform/core/models.py:74
+#: video_downloading_platform/core/models.py:77
 msgid "Add more details about the project here."
 msgstr ""
 
-#: video_downloading_platform/core/models.py:75
+#: video_downloading_platform/core/models.py:78
+#: video_downloading_platform/core/models.py:431
 msgid "No description"
 msgstr ""
 
-#: video_downloading_platform/core/models.py:80
+#: video_downloading_platform/core/models.py:83
 msgid "Who owns the current collection."
 msgstr ""
 
-#: video_downloading_platform/core/models.py:168
-msgid "One URL per line"
-msgstr ""
-
-#: video_downloading_platform/core/models.py:175
+#: video_downloading_platform/core/models.py:165
 msgid "Created"
 msgstr ""
 
-#: video_downloading_platform/core/models.py:176
+#: video_downloading_platform/core/models.py:166
 msgid "Enqueued"
 msgstr ""
 
-#: video_downloading_platform/core/models.py:177
+#: video_downloading_platform/core/models.py:167
 msgid "Processing"
 msgstr ""
 
-#: video_downloading_platform/core/models.py:178
+#: video_downloading_platform/core/models.py:168
 msgid "Post processing"
 msgstr ""
 
-#: video_downloading_platform/core/models.py:179
+#: video_downloading_platform/core/models.py:169
 msgid "Succeeded"
 msgstr ""
 
-#: video_downloading_platform/core/models.py:180
+#: video_downloading_platform/core/models.py:170
 msgid "Cancelled"
 msgstr ""
 
-#: video_downloading_platform/core/models.py:181
+#: video_downloading_platform/core/models.py:171
 msgid "Failed"
 msgstr ""
 
-#: video_downloading_platform/core/models.py:187
+#: video_downloading_platform/core/models.py:179
+msgid "Automatic"
+msgstr ""
+
+#: video_downloading_platform/core/models.py:180
 msgid "Video"
 msgstr ""
 
-#: video_downloading_platform/core/models.py:188
-msgid "Audio"
+#: video_downloading_platform/core/models.py:182
+msgid "Gallery"
 msgstr ""
 
 #: video_downloading_platform/core/models.py:189
-msgid "Web page"
-msgstr ""
-
-#: video_downloading_platform/core/models.py:195
 msgid "Unique identifier of the current download request."
 msgstr ""
 
-#: video_downloading_platform/core/models.py:200
+#: video_downloading_platform/core/models.py:194
 msgid "Creation date of the current download request."
 msgstr ""
 
-#: video_downloading_platform/core/models.py:204
+#: video_downloading_platform/core/models.py:198
 msgid "Latest modification of the current download request."
 msgstr ""
 
-#: video_downloading_platform/core/models.py:223
+#: video_downloading_platform/core/models.py:217
 msgid "The URL of the video to download."
 msgstr ""
 
-#: video_downloading_platform/core/models.py:228
-#: video_downloading_platform/core/models.py:293
-#: video_downloading_platform/core/models.py:367
+#: video_downloading_platform/core/models.py:222
+#: video_downloading_platform/core/models.py:356
+#: video_downloading_platform/core/models.py:451
 msgid "Who owns the current download request."
 msgstr ""
 
-#: video_downloading_platform/core/models.py:265
-#: video_downloading_platform/core/models.py:324
+#: video_downloading_platform/core/models.py:312
+msgid "One URL per line"
+msgstr ""
+
+#: video_downloading_platform/core/models.py:328
+#: video_downloading_platform/core/models.py:390
 msgid "Unique identifier of the current downloaded content."
 msgstr ""
 
-#: video_downloading_platform/core/models.py:270
-#: video_downloading_platform/core/models.py:329
+#: video_downloading_platform/core/models.py:333
+#: video_downloading_platform/core/models.py:395
 msgid "Creation date of the current downloaded content."
 msgstr ""
 
-#: video_downloading_platform/core/models.py:274
-#: video_downloading_platform/core/models.py:333
+#: video_downloading_platform/core/models.py:337
+#: video_downloading_platform/core/models.py:399
 msgid "Latest modification of the current downloaded content."
 msgstr ""
 
-#: video_downloading_platform/core/views.py:34
+#: video_downloading_platform/core/models.py:430
+msgid "Add more details about this file."
+msgstr ""
+
+#: video_downloading_platform/core/views.py:139
 #, python-brace-format
 msgid "Your batch {batch.name} have been created."
 msgstr ""
 
-#: video_downloading_platform/core/views.py:42
-#: video_downloading_platform/core/views.py:105
+#: video_downloading_platform/core/views.py:147
+#: video_downloading_platform/core/views.py:223
 #, python-brace-format
 msgid "Your batch {batch.name} have been closed."
 msgstr ""
 
-#: video_downloading_platform/core/views.py:59
+#: video_downloading_platform/core/views.py:170
 msgid "Your request has been successfully submitted."
 msgstr ""
 
-#: video_downloading_platform/core/views.py:116
+#: video_downloading_platform/core/views.py:232
 #, python-brace-format
 msgid "Your batch {batch.name} have been archived."
+msgstr ""
+
+#: video_downloading_platform/hrw_customization/apps.py:7
+msgid "HRW Customization"
+msgstr ""
+
+#: video_downloading_platform/hrw_customization/templates/partials/home_header.html:9
+#: video_downloading_platform/templates/partials/home_header.html:9
+msgid ""
+"Welcome to VHS. This tool will help you to download videos and photographs "
+"from over 1000 websites including social media platforms. See this page on "
+msgstr ""
+
+#: video_downloading_platform/hrw_customization/templates/partials/home_header.html:11
+#: video_downloading_platform/templates/partials/home_header.html:11
+msgid " to learn more about the tool and for frequently asked questions."
 msgstr ""
 
 #: video_downloading_platform/templates/account/account_inactive.html:5
@@ -412,12 +445,12 @@ msgid ""
 msgstr ""
 
 #: video_downloading_platform/templates/pages/batch_list.html:9
-#: video_downloading_platform/templates/pages/home.html:26
+#: video_downloading_platform/templates/pages/home.html:54
 msgid "My collections"
 msgstr ""
 
 #: video_downloading_platform/templates/pages/batch_list.html:39
-#: video_downloading_platform/templates/pages/home.html:76
+#: video_downloading_platform/templates/pages/home.html:107
 msgid "Details"
 msgstr ""
 
@@ -433,31 +466,29 @@ msgstr ""
 msgid "Closed batches"
 msgstr ""
 
-#: video_downloading_platform/templates/pages/home.html:10
-msgid ""
-"Welcome to VHS. This tool will help you to download videos from over 1000 "
-"websites including social media platforms. Click on the About "
-"<strong>section</strong> in the menu above to learn more about the tool and "
-"for frequently asked questions."
-msgstr ""
-
-#: video_downloading_platform/templates/pages/home.html:16
-msgid "My downloads"
-msgstr ""
-
 #: video_downloading_platform/templates/pages/home.html:20
-msgid "Submit"
+#: video_downloading_platform/templates/partials/m_downloaded_contents.html:35
+msgid "Download"
 msgstr ""
 
 #: video_downloading_platform/templates/pages/home.html:28
+msgid "Upload"
+msgstr ""
+
+#: video_downloading_platform/templates/pages/home.html:38
+#: video_downloading_platform/templates/pages/home.html:46
+msgid "Submit"
+msgstr ""
+
+#: video_downloading_platform/templates/pages/home.html:56
 msgid "View all"
 msgstr ""
 
-#: video_downloading_platform/templates/pages/home.html:36
+#: video_downloading_platform/templates/pages/home.html:64
 msgid "Create"
 msgstr ""
 
-#: video_downloading_platform/templates/pages/home.html:73
+#: video_downloading_platform/templates/pages/home.html:104
 #: video_downloading_platform/templates/partials/m_batch.html:19
 #: video_downloading_platform/templates/partials/m_modal_error.html:16
 #: video_downloading_platform/templates/partials/m_modal_metadata.html:21
@@ -480,24 +511,28 @@ msgstr ""
 msgid "Downloaded content:"
 msgstr ""
 
-#: video_downloading_platform/templates/partials/m_batch_details.html:51
-msgid "nothing :("
-msgstr ""
-
-#: video_downloading_platform/templates/partials/m_batch_details.html:71
-msgid "View metadata"
-msgstr ""
-
-#: video_downloading_platform/templates/partials/m_batch_details.html:78
+#: video_downloading_platform/templates/partials/m_batch_details.html:43
 msgid "Download archive"
 msgstr ""
 
-#: video_downloading_platform/templates/partials/m_batch_details.html:84
+#: video_downloading_platform/templates/partials/m_batch_details.html:56
 msgid "Status:"
 msgstr ""
 
-#: video_downloading_platform/templates/partials/m_batch_details.html:92
+#: video_downloading_platform/templates/partials/m_batch_details.html:64
 msgid "updated"
+msgstr ""
+
+#: video_downloading_platform/templates/partials/m_downloaded_contents.html:47
+msgid "View metadata"
+msgstr ""
+
+#: video_downloading_platform/templates/partials/m_downloaded_contents.html:54
+msgid "View exif"
+msgstr ""
+
+#: video_downloading_platform/templates/partials/m_downloaded_contents.html:65
+msgid "nothing :("
 msgstr ""
 
 #: video_downloading_platform/templates/partials/m_modal_error.html:9
