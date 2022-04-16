@@ -13,14 +13,16 @@
     <div class="col-md-5">
       <ul class="nav nav-tabs" id="actionTab" role="tablist">
         <li class="nav-item" role="presentation">
-          <button class="nav-link {% if not ul_request_form.errors %}active{% endif %} h4" id="download-tab" data-bs-toggle="tab" data-bs-target="#download-tab-form"
+          <button class="nav-link {% if not ul_request_form.errors %}active{% endif %} h4" id="download-tab"
+                  data-bs-toggle="tab" data-bs-target="#download-tab-form"
                   type="button" role="tab" aria-controls="download-tab-form"
                   aria-selected="{% if ul_request_form.errors %}false{% else %}true{% endif %}">
             {% translate "Download" %}
           </button>
         </li>
         <li class="nav-item" role="presentation">
-          <button class="nav-link h4 {% if ul_request_form.errors %}active{% endif %}" id="upload-tab" data-bs-toggle="tab" data-bs-target="#upload-tab-form" type="button"
+          <button class="nav-link h4 {% if ul_request_form.errors %}active{% endif %}" id="upload-tab"
+                  data-bs-toggle="tab" data-bs-target="#upload-tab-form" type="button"
                   role="tab" aria-controls="upload-tab-form"
                   aria-selected="{% if ul_request_form.errors %}true{% else %}false{% endif %}">
             {% translate "Upload" %}
@@ -28,14 +30,16 @@
         </li>
       </ul>
       <div class="tab-content" id="myTabContent">
-        <div class="tab-pane fade {% if not ul_request_form.errors %}show active{% endif %}" id="download-tab-form" role="tabpanel" aria-labelledby="download-tab">
+        <div class="tab-pane fade {% if not ul_request_form.errors %}show active{% endif %}" id="download-tab-form"
+             role="tabpanel" aria-labelledby="download-tab">
           <form method="post">
             {% csrf_token %}
             {{ dl_request_form|crispy }}
             <button class="btn btn-primary" type="submit" name="request_download">{% translate "Submit" %}</button>
           </form>
         </div>
-        <div class="tab-pane fade{% if ul_request_form.errors %}show active{% endif %}" id="upload-tab-form" role="tabpanel" aria-labelledby="upload-tab">
+        <div class="tab-pane fade{% if ul_request_form.errors %}show active{% endif %}" id="upload-tab-form"
+             role="tabpanel" aria-labelledby="upload-tab">
           <form method="post" enctype="multipart/form-data">
             {% csrf_token %}
             {{ ul_request_form|crispy }}
@@ -73,19 +77,21 @@
                   <span class="small"><i class="fa fa-clock-o"
                                          aria-hidden="true"></i> {{ batch.updated_at|naturaltime }}</span>
                 </div>
-                <div class="col-md-4 align-right h4">
-                  <span class="badge bg-secondary">
-                    <i class="fa fa-arrow-circle-right" aria-hidden="true"></i>
-                    <span id="{{ batch.id }}_submitted" class="badge ">0</span>
-                  </span>
-                  <span class="badge bg-success">
-                    <i class="fa fa-check-circle" aria-hidden="true"></i>
-                    <span id="{{ batch.id }}_succeeded" class="badge ">0</span>
-                  </span>
-                  <span class="badge bg-danger">
-                    <i class="fa fa-times-circle" aria-hidden="true"></i>
-                    <span id="{{ batch.id }}_failed" class="badge ">0</span>
-                  </span>
+                <div class="col-md-4 text-right h4 clearfix">
+                  <div class="pull-right">
+                    <span class="badge bg-secondary">
+                      <i class="fa fa-arrow-circle-right" aria-hidden="true"></i>
+                      <span id="{{ batch.id }}_submitted" class="badge ">0</span>
+                    </span>
+                      <span class="badge bg-success">
+                      <i class="fa fa-check-circle" aria-hidden="true"></i>
+                      <span id="{{ batch.id }}_succeeded" class="badge ">0</span>
+                    </span>
+                      <span class="badge bg-danger">
+                      <i class="fa fa-times-circle" aria-hidden="true"></i>
+                      <span id="{{ batch.id }}_failed" class="badge ">0</span>
+                    </span>
+                    </div>
                 </div>
               </div>
             </div>
