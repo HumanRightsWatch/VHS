@@ -19,13 +19,11 @@ FROM python as python-build-stage
 ARG BUILD_ENVIRONMENT=production
 
 # Install apt packages
-RUN apt-get update && apt-get install --no-install-recommends -y \
+RUN apt-get update && apt-get install -y \
   # dependencies for building Python packages
   build-essential \
   # psycopg2 dependencies
-  libpq-dev \
-  # exiftool
-  libimage-exiftool-perl
+  libpq-dev
 
 # Requirements are installed here to ensure they will be cached.
 COPY ./requirements .
@@ -59,6 +57,8 @@ RUN apt-get update && apt-get install --no-install-recommends -y \
   gettext \
   # cleaning up unused files
   && apt-get purge -y --auto-remove -o APT::AutoRemove::RecommendsImportant=false \
+  # exiftool
+  && apt-get install libimage-exiftool-perl -y \
   && rm -rf /var/lib/apt/lists/*
 
 # All absolute dir copies ignore workdir instruction. All relative dir copies are wrt to the workdir instruction
