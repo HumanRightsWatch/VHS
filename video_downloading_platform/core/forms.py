@@ -10,14 +10,20 @@ class BatchRequestForm(forms.ModelForm):
         model = BatchRequest
         fields = [
             'batch',
-            'urls'
+            'urls',
+            'type'
         ]
         labels = {
             'batch': 'Collection',
         }
 
+    def __init__(self, *args, **kwargs):
+        super(BatchRequestForm, self).__init__(*args, **kwargs)
+        self.fields['batch'].empty_label = None
+
     def set_user(self, connected_user):
         if connected_user:
+            self.instance.owner = connected_user
             self.fields['batch'].queryset = Batch.get_users_open_batches(connected_user)
 
     def clean_urls(self):
@@ -43,7 +49,6 @@ class BatchForm(forms.ModelForm):
         }
 
 
-
 def validate_batch(batch_id):
     if not Batch.objects.filter(id=batch_id).exists():
         raise ValidationError("Selected collection does not exists")
@@ -52,7 +57,11 @@ def validate_batch(batch_id):
 class UploadForm(forms.Form):
     batch = forms.ChoiceField(label=_('Collection'))
     name = forms.CharField(label=_('Filename'), max_length=100)
-    origin = forms.CharField(label=_('Origine'), max_length=100, required=False)
+    description = forms.CharField(
+        label=_('Description'),
+        max_length=200,
+        required=False,
+        widget=forms.Textarea(attrs={'rows': 2, 'cols': 20}))
     file = forms.FileField()
 
     def clean_batch(self):

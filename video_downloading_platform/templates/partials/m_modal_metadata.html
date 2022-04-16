@@ -3,13 +3,13 @@
 <div class="modal fade" id="metadataModal-{{ id }}-{{ ext }}" tabindex="-1"
      aria-labelledby="metadataModalLabel-{{ id }}-{{ ext }}"
      aria-hidden="true">
-  <div class="modal-dialog modal-lg">
+  <div class="modal-dialog modal-xl">
     <div class="modal-content">
       <div class="modal-header">
         <h5 class="modal-title" id="metadataModalLabel-{{ id }}-{{ ext }}">Metadata</h5>
         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
       </div>
-      <div class="modal-body modal-lg small">
+      <div class="modal-body small">
         <dl class="row">
           {% for key, value in metadata.items %}
             <dt class="col-md-6">{{ key }}</dt>

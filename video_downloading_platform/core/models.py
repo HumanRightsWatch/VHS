@@ -1,12 +1,15 @@
+import tempfile
 import uuid
 
+import youtube_dl
 from django.conf import settings
+from django.core.validators import URLValidator
 from django.db import models
 from django.urls import reverse_lazy
 from django.utils.translation import gettext_lazy as _
 from django_q.humanhash import HumanHasher
-from django.core.validators import URLValidator
 from django_q.tasks import async_task
+from gallery_dl.extractor import find as gdl_find_extractors
 
 
 def _generate_random_name():
@@ -133,7 +136,6 @@ class Batch(models.Model):
     def _get_users_batches(user, status):
         try:
             user_groups = user.groups.values_list('name', flat=True)
-            print(user_groups)
             if 'admin' in user_groups:
                 return Batch.objects.filter(status=status)
             else:
@@ -155,21 +157,10 @@ class Batch(models.Model):
         return self.name
 
 
-class BatchRequest(models.Model):
-    class Meta:
-        managed = False
-
-    batch = models.ForeignKey(
-        Batch,
-        on_delete=models.DO_NOTHING
-    )
-    urls = models.TextField(
-        help_text=_('One URL per line'),
-        validators=[_validate_urls]
-    )
-
-
 class DownloadRequest(models.Model):
+    class Meta:
+        ordering = ['-updated_at']
+
     class Status(models.TextChoices):
         CREATED = 'CREATED', _('Created')
         ENQUEUED = 'ENQUEUED', _('Enqueued')
@@ -181,11 +172,15 @@ class DownloadRequest(models.Model):
 
     VIDEO = 'VIDEO'
     AUDIO = 'AUDIO'
+    GALLERY = 'GALLERY'
     WEB_PAGE = 'WEP_PAGE'
+    AUTOMATIC = 'AUTOMATIC'
     REQUEST_TYPE = [
+        (AUTOMATIC, _('Automatic')),
         (VIDEO, _('Video')),
-        (AUDIO, _('Audio')),
-        (WEB_PAGE, _('Webpage')),
+        # (AUDIO, _('Audio')),
+        (GALLERY, _('Gallery')),
+        # (WEB_PAGE, _('Webpage')),
     ]
 
     id = models.UUIDField(
@@ -234,10 +229,17 @@ class DownloadRequest(models.Model):
     )
 
     def start(self):
-        from video_downloading_platform.core.tasks import run_download_request
+        from video_downloading_platform.core.tasks import run_download_video_request, run_download_gallery_request
         self.status = DownloadRequest.Status.ENQUEUED
         self.save()
-        async_task(run_download_request, self.id)
+        if self.type == DownloadRequest.VIDEO:
+            # run_download_video_request(self.id)
+            s_id = str(self.id)
+            async_task(run_download_video_request, s_id)
+        elif self.type == DownloadRequest.GALLERY:
+            # run_download_gallery_request(self.id)
+            s_id = str(self.id)
+            async_task(run_download_gallery_request, s_id)
 
     @staticmethod
     def get_users_requests(user):
@@ -257,7 +259,69 @@ def _get_zip_upload_dir(instance, filename):
     return f'{owner_id}/{download_request_id}/{instance.id}.archive.zip'
 
 
+def _get_request_types_to_run(url, request_type):
+    suitable_for_ydl = False
+    suitable_for_gdl = False
+    if request_type == DownloadRequest.AUTOMATIC:
+        # Suitable for Youtube DL?
+        with tempfile.TemporaryDirectory() as tmp_dir:
+            options = {
+                'outtmpl': f'{tmp_dir}/%(id)s.%(ext)s',
+                'format': 'best'
+            }
+            try:
+                with youtube_dl.YoutubeDL(options) as ydl:
+                    ydl.extract_info(url, download=False, process=False)
+                    suitable_for_ydl = True
+            except Exception:
+                suitable_for_ydl = False
+        # Suitable for Gallery DL?
+        suitable_for_gdl = gdl_find_extractors(url) is not None
+    elif request_type == DownloadRequest.VIDEO:
+        suitable_for_ydl = True
+    elif request_type == DownloadRequest.GALLERY:
+        suitable_for_gdl = True
+
+    request_types = []
+    if suitable_for_ydl:
+        request_types.append(DownloadRequest.VIDEO)
+    if suitable_for_gdl:
+        request_types.append(DownloadRequest.GALLERY)
+
+    if not suitable_for_ydl and not suitable_for_gdl:
+        request_types.append(DownloadRequest.VIDEO)
+        request_types.append(DownloadRequest.GALLERY)
+
+    return request_types
+
+
+class BatchRequest(models.Model):
+    class Meta:
+        managed = False
+
+    batch = models.ForeignKey(
+        Batch,
+        on_delete=models.DO_NOTHING
+    )
+    type = models.CharField(
+        max_length=16,
+        choices=DownloadRequest.REQUEST_TYPE,
+        default=DownloadRequest.AUTOMATIC
+    )
+    urls = models.TextField(
+        help_text=_('One URL per line'),
+        validators=[_validate_urls]
+    )
+    owner = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.DO_NOTHING
+    )
+
+
 class DownloadReport(models.Model):
+    class Meta:
+        ordering = ['-updated_at']
+
     id = models.UUIDField(
         primary_key=True,
         default=uuid.uuid4,
@@ -317,6 +381,9 @@ def _get_upload_dir(instance, filename):
 
 
 class DownloadedContent(models.Model):
+    class Meta:
+        ordering = ['name']
+
     id = models.UUIDField(
         primary_key=True,
         default=uuid.uuid4,
@@ -332,8 +399,16 @@ class DownloadedContent(models.Model):
         help_text=_('Latest modification of the current downloaded content.'),
         auto_now=True
     )
+    md5 = models.CharField(
+        max_length=32,
+        blank=True,
+        null=True
+    )
     sha256 = models.CharField(
         max_length=64,
+    )
+    target_file = models.BooleanField(
+        default=False
     )
     mime_type = models.CharField(
         max_length=64,
@@ -351,7 +426,17 @@ class DownloadedContent(models.Model):
         null=True,
         blank=True
     )
+    description = models.TextField(
+        help_text=_('Add more details about this file.'),
+        default=_('No description'),
+        null=True,
+        blank=True
+    )
     post_processing_result = models.JSONField(
+        null=True,
+        blank=True
+    )
+    exif_data = models.JSONField(
         null=True,
         blank=True
     )

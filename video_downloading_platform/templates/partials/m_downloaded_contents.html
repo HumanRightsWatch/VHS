@@ -38,7 +38,7 @@
         </div>
       </div>
     </div>
-    {% if content.metadata and content.exif_data %}
+    {% if content.metadata or content.exif_data %}
       <div class="row">
         <div class="col">
           {% if content.metadata %}

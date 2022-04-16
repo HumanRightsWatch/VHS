@@ -1,4 +1,4 @@
-import mimetypes
+import os.path
 import traceback
 from tempfile import NamedTemporaryFile
 
@@ -6,6 +6,7 @@ from django.conf import settings
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.core.files import File
+from django.db import transaction
 from django.forms import model_to_dict
 from django.http import HttpResponse, JsonResponse
 from django.shortcuts import render, redirect
@@ -15,12 +16,14 @@ from notifications.signals import notify
 from notifications.utils import id2slug
 
 from video_downloading_platform.core.forms import BatchForm, BatchRequestForm, UploadForm
-from video_downloading_platform.core.models import Batch, DownloadRequest, DownloadedContent, DownloadReport
-from video_downloading_platform.core.tasks import hash_file, create_zip_archive
+from video_downloading_platform.core.models import Batch, DownloadRequest, DownloadedContent, DownloadReport, \
+    _get_request_types_to_run
+from video_downloading_platform.core.tasks import hash_file, create_zip_archive, _get_exif_data_for_file, get_mimetype
 
 
 def handle_file_upload(request, upload_form):
     filename = str(request.FILES['file'])
+    original_basename = os.path.basename(filename)
     user = request.user
     batch = upload_form.cleaned_data.get('batch')
     download_request = DownloadRequest(
@@ -37,31 +40,36 @@ def handle_file_upload(request, upload_form):
     download_report.save()
     file = request.FILES['file']
     try:
-        with NamedTemporaryFile() as tmp:
+        with NamedTemporaryFile(suffix=original_basename) as tmp:
             for chunk in file.chunks():
                 tmp.write(chunk)
             tmp.seek(0)
-            sha256 = hash_file(tmp.name)
-            mime_type = mimetypes.MimeTypes().guess_type(tmp.name)[0]
+            sha256, md5 = hash_file(tmp.name)
+            mime_type = get_mimetype(tmp.name)
             if not mime_type:
                 mime_type = 'application/octet-stream'
+            exif_data = _get_exif_data_for_file(tmp.name)
             metadata = {
                 'original_name': filename,
                 'preferred_name': upload_form.cleaned_data['name'],
                 'sha256': sha256,
+                'md5': md5,
                 'mime_type': mime_type,
-                'origin': upload_form.cleaned_data['origin'],
+                'description': upload_form.cleaned_data['description'],
             }
             downloaded_content = DownloadedContent(
                 download_report=download_report,
                 owner=user,
+                md5=md5,
                 sha256=sha256,
                 name=filename,
                 metadata=metadata,
-                mime_type=mime_type
+                exif_data=exif_data,
+                mime_type=mime_type,
+                target_file=True,
+                description=upload_form.cleaned_data['description']
             )
             downloaded_content.save()
-            mode = 'rb'
             content_file = File(tmp)
             downloaded_content.content.save(filename, content_file)
             downloaded_content.save()
@@ -100,9 +108,16 @@ def handle_file_upload(request, upload_form):
                     public=False,
                     actions=actions)
 
+
+def _start_pending_requests(requests):
+    for dl_request in requests:
+        dl_request.start()
+
+
 @login_required
 def home_view(request):
     user = request.user
+
     dl_request_form = BatchRequestForm()
     dl_request_form.set_user(user)
 
@@ -134,18 +149,24 @@ def home_view(request):
             f = BatchRequestForm(request.POST)
             f.set_user(user)
             if f.is_valid():
+                request_type = f.cleaned_data.get('type')
                 batch = f.cleaned_data.get('batch')
                 urls = f.cleaned_data.get('urls').splitlines()
                 for url in urls:
                     striped_url = url.strip()
                     if len(striped_url) > 0:
-                        dl_request = DownloadRequest(
-                            batch=batch,
-                            url=striped_url,
-                            owner=user
-                        )
-                        dl_request.save()
-                        dl_request.start()
+                        tasks_to_run = _get_request_types_to_run(url, request_type)
+                        tasks_to_start = []
+                        for request_type in tasks_to_run:
+                            dl_request = DownloadRequest.objects.create(
+                                batch=batch,
+                                url=striped_url,
+                                owner=user,
+                                type=request_type
+                            )
+                            dl_request.save()
+                            tasks_to_start.append(dl_request)
+                        transaction.on_commit(lambda: _start_pending_requests(tasks_to_start))
                 messages.success(request, _('Your request has been successfully submitted.'))
             else:
                 dl_request_form = f
@@ -205,7 +226,6 @@ def close_batch_view(request, batch_id):
 
 @login_required
 def archive_batch_view(request, batch_id):
-    user = request.user
     if batch_id:
         batch = Batch.objects.get(id=batch_id)
         batch.archive()
@@ -230,7 +250,6 @@ def batch_details_view(request, batch_id):
 
 @login_required
 def get_downloaded_content_view(request, content_id):
-    user = request.user
     content = DownloadedContent.objects.get(id=content_id)
     response = HttpResponse(content.content, content_type=content.mime_type)
     response['Content-Disposition'] = 'inline; filename=' + content.name
@@ -239,7 +258,6 @@ def get_downloaded_content_view(request, content_id):
 
 @login_required
 def get_downloaded_file_view(request, content_id):
-    user = request.user
     content = DownloadedContent.objects.get(id=content_id)
     try:
         return HttpResponse(content.content, content_type=content.mime_type)
@@ -325,7 +343,6 @@ def get_batch_status_view(request):
 
 @login_required
 def get_report_archive_view(request, report_id):
-    user = request.user
     report = DownloadReport.objects.get(id=report_id)
     response = HttpResponse(report.archive, content_type='application/zip')
     response['Content-Disposition'] = 'inline; filename=' + report.archive.name
