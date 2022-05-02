@@ -224,6 +224,17 @@ def close_batch_view(request, batch_id):
     return redirect(request.META.get('HTTP_REFERER'))
 
 
+def reopen_batch_view(request, batch_id):
+    user = request.user
+    if not user.is_authenticated:
+        return redirect(reverse_lazy(settings.LOGIN_URL))
+    if batch_id:
+        batch = Batch.objects.get(id=batch_id)
+        batch.reopen()
+        messages.success(request, _(f'Your batch {batch.name} have been closed.'))
+    return redirect(request.META.get('HTTP_REFERER'))
+
+
 @login_required
 def archive_batch_view(request, batch_id):
     if batch_id:

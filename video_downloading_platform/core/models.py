@@ -89,6 +89,10 @@ class Batch(models.Model):
         self.status = Batch.CLOSED
         self.save()
 
+    def reopen(self):
+        self.status = Batch.OPEN
+        self.save()
+
     def archive(self):
         self.status = Batch.ARCHIVED
         for download_request in self.download_requests.all():
