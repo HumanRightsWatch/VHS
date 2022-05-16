@@ -144,6 +144,7 @@ def home_view(request):
                 )
                 batch.save()
                 messages.success(request, _(f'Your batch {batch.name} have been created.'))
+                return redirect(request.META.get('HTTP_REFERER'))
             else:
                 batch_form = f
         elif 'close_batch' in request.POST:
@@ -152,6 +153,7 @@ def home_view(request):
                 batch = Batch.objects.get(id=batch_id)
                 batch.close()
                 messages.success(request, _(f'Your batch {batch.name} have been closed.'))
+                return redirect(request.META.get('HTTP_REFERER'))
         elif 'request_download' in request.POST:
             f = BatchRequestForm(request.POST)
             f.set_user(user)
@@ -175,6 +177,7 @@ def home_view(request):
                             tasks_to_start.append(dl_request)
                         transaction.on_commit(lambda: _start_pending_requests(tasks_to_start))
                 messages.success(request, _('Your request has been successfully submitted.'))
+                return redirect(request.META.get('HTTP_REFERER'))
             else:
                 dl_request_form = f
         elif 'request_upload' in request.POST:
@@ -182,6 +185,7 @@ def home_view(request):
             f.set_user(user)
             if f.is_valid():
                 handle_file_upload(request, f)
+                return redirect(request.META.get('HTTP_REFERER'))
             else:
                 ul_request_form = f
     else:
