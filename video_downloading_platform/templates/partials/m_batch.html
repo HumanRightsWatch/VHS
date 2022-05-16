@@ -1,37 +1,59 @@
 {% load i18n %}
 
-<div class="col-md-12 mb-4">
-  <h1>
-    <span class="badge bg-secondary">{{ batch.download_requests.count }}</span>
-    {{ batch.name }}
-  </h1>
-  <p class="text-muted">
-    <i class="fa fa-user" aria-hidden="true"></i>  {{ batch.owner }}
-  </p>
-  <p class="text-muted">
-    {{ batch.description }}
-  </p>
-  <div class="align-content-center">
-    {% if batch.status != "ARCHIVED" %}
-      <div class="btn-group" role="group">
-        {% if batch.status == "OPEN" %}
-          <a href="{% url 'close_batch' batch.id %}" class="btn btn-sm btn-secondary" role="button">
-            <i class="fa fa-times" aria-hidden="true"></i> {% translate "Close" %}
-          </a>
-        {% endif %}
-        {% if batch.status == "CLOSED" %}
-          <a href="{% url 'reopen_batch' batch.id %}" class="btn btn-sm btn-secondary" role="button">
-            <i class="fa fa-folder-open" aria-hidden="true"></i> {% translate "Reopen" %}
-          </a>
-        {% endif %}
-        <a href="{% url 'archive_batch' batch.id %}" class="btn btn-sm btn-danger" role="button">
-          <i class="fa fa-archive" aria-hidden="true"></i> {% translate "Archive" %}
-        </a>
-      </div>
-    {% endif %}
-  </div>
+<div class="row">
+  <div class="col mb-4">
+    <h1>
+      <span class="badge bg-secondary">{{ batch.download_requests.count }}</span>
+      {{ batch.name }}
+    </h1>
 
-  <div class="mt-4">
-    {% include "partials/m_batch_details.html" with batch_status=batch.status %}
+    <p class="lead">
+      {{ batch.description }}
+    </p>
+    <div class="align-content-center">
+      {% if batch.status != "ARCHIVED" %}
+        <div class="btn-group" role="group">
+          {% if batch.status == "OPEN" %}
+            {% if user == batch.owner %}
+              <a href="{% url 'edit_batch_team' batch.team.id %}" class="btn btn-sm btn-primary" role="button">
+                <i class="fa fa-share-alt" aria-hidden="true"></i> {% translate "Share" %}
+              </a>
+              <a href="{% url 'close_batch' batch.id %}" class="btn btn-sm btn-primary" role="button">
+                <i class="fa fa-times" aria-hidden="true"></i> {% translate "Close" %}
+              </a>
+              {% if batch.status == "CLOSED" %}
+                <a href="{% url 'reopen_batch' batch.id %}" class="btn btn-sm btn-primary" role="button">
+                  <i class="fa fa-folder-open" aria-hidden="true"></i> {% translate "Reopen" %}
+                </a>
+              {% endif %}
+              <a href="{% url 'archive_batch' batch.id %}" class="btn btn-sm btn-danger" role="button">
+                <i class="fa fa-archive" aria-hidden="true"></i> {% translate "Archive" %}
+              </a>
+            {% endif %}
+          {% endif %}
+        </div>
+      {% endif %}
+    </div>
+  </div>
+  <div class="col-md-4 mb-4">
+    <p>
+      <i class="fa fa-user-circle-o text-primary" aria-hidden="true"></i> {{ batch.owner }}
+      <span class="text-muted">
+        ({% trans "owner" %})
+      </span>
+    </p>
+    {% trans "Collection shared with: " %}
+    <ul>
+      {% for contrib in batch.team.contributors.all %}
+        <li><i class="fa fa-user text-success" aria-hidden="true"></i> {{ contrib }}</li>
+      {% empty %}
+        <li>{% trans "Nobody" %}</li>
+      {% endfor %}
+    </ul>
+  </div>
+  <div class="row">
+    <div class="mt-4">
+      {% include "partials/m_batch_details.html" with batch_status=batch.status %}
+    </div>
   </div>
 </div>

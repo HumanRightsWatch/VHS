@@ -5,7 +5,7 @@ import yt_dlp as youtube_dl
 from django.conf import settings
 from django.core.validators import URLValidator
 from django.db import models
-from django.urls import reverse_lazy
+from django.urls import reverse_lazy, reverse
 from django.utils.translation import gettext_lazy as _
 from django_q.humanhash import HumanHasher
 from django_q.tasks import async_task
@@ -25,6 +25,24 @@ def _validate_urls(value):
         striped_url = url.strip()
         if len(striped_url) > 0:
             uv(url)
+
+
+class BatchTeam(models.Model):
+    contributors = models.ManyToManyField(
+        settings.AUTH_USER_MODEL,
+        related_name='teams',
+    )
+    owner = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.DO_NOTHING
+    )
+
+    def get_absolute_url(self):
+        return reverse('batch_details', kwargs={'batch_id': self.batch.first().id})
+
+    @staticmethod
+    def get_my_teams_as_contrib(user):
+        return BatchTeam.objects.filter(contributors=user)
 
 
 class Batch(models.Model):
@@ -85,6 +103,13 @@ class Batch(models.Model):
         editable=False
     )
 
+    team = models.ForeignKey(
+        BatchTeam,
+        on_delete=models.CASCADE,
+        null=True,
+        related_name='batch'
+    )
+
     def close(self):
         self.status = Batch.CLOSED
         self.save()
@@ -119,14 +144,26 @@ class Batch(models.Model):
             if 'admin' in user_groups:
                 return Batch.objects.all()
             else:
-                return Batch.objects.filter(owner=user)
+                open_batches = []
+                teams = BatchTeam.get_my_teams_as_contrib(user).all()
+                for team in teams:
+                    batch = team.batch.first()
+                    open_batches.append(batch)
+                open_batches.extend(Batch.objects.filter(owner=user).all())
+                return open_batches
         except Exception as e:
             print(e)
         return None
 
     @staticmethod
     def get_users_open_batches(user):
-        return Batch._get_users_batches(user, Batch.OPEN)
+        _batches = []
+        teams = BatchTeam.get_my_teams_as_contrib(user).all()
+        for team in teams:
+            batch = team.batch.first()
+            _batches.append(batch.id)
+        _batches.extend([b.id for b in Batch._get_users_batches(user, Batch.OPEN).all()])
+        return Batch.objects.filter(id__in=_batches)
 
     @staticmethod
     def get_users_closed_batches(user):
@@ -136,6 +173,9 @@ class Batch(models.Model):
     def get_users_archived_batches(user):
         return Batch._get_users_batches(user, Batch.ARCHIVED)
 
+    def is_shared_with_me(self, user):
+        return user in self.team.contributors
+
     @staticmethod
     def _get_users_batches(user, status):
         try:
@@ -143,7 +183,15 @@ class Batch(models.Model):
             if 'admin' in user_groups:
                 return Batch.objects.filter(status=status)
             else:
-                return Batch.objects.filter(owner=user, status=status)
+                _batches = []
+                teams = BatchTeam.get_my_teams_as_contrib(user).all()
+                for team in teams:
+                    batch = team.batch.first()
+                    if batch.status == status:
+                        _batches.append(batch.id)
+                _batches.extend([b.id for b in Batch.objects.filter(owner=user, status=status).all()])
+                _batches = list(set(_batches))
+                return Batch.objects.filter(id__in=_batches)
         except Exception as e:
             print(e)
         return None

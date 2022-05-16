@@ -12879,3 +12879,19 @@ textarea.form-control-lg {
   -webkit-filter: blur(0);
           filter: blur(0);
 }
+
+.selector-available > h2, .selector-available > .h2 {
+  font-size: 1em;
+  padding: 3px;
+  color: #212529 !important;
+  background-color: #f8f8f8 !important;
+  margin-bottom: 0 !important;
+}
+
+.selector-chosen > h2, .selector-chosen > .h2 {
+  font-size: 1em;
+  padding: 3px;
+  color: #212529 !important;
+  background-color: #f8f8f8 !important;
+  margin-bottom: 0 !important;
+}

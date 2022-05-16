@@ -12,12 +12,13 @@ from django.http import HttpResponse, JsonResponse
 from django.shortcuts import render, redirect
 from django.urls import reverse_lazy
 from django.utils.translation import gettext as _
+from django.views.generic import UpdateView
 from notifications.signals import notify
 from notifications.utils import id2slug
 
-from video_downloading_platform.core.forms import BatchForm, BatchRequestForm, UploadForm
+from video_downloading_platform.core.forms import BatchForm, BatchRequestForm, UploadForm, BatchTeamForm
 from video_downloading_platform.core.models import Batch, DownloadRequest, DownloadedContent, DownloadReport, \
-    _get_request_types_to_run
+    _get_request_types_to_run, BatchTeam
 from video_downloading_platform.core.tasks import hash_file, create_zip_archive, _get_exif_data_for_file, get_mimetype
 
 
@@ -130,10 +131,15 @@ def home_view(request):
         if 'save_batch' in request.POST:
             f = BatchForm(request.POST)
             if f.is_valid():
+                team = BatchTeam(
+                    owner=user
+                )
+                team.save()
                 batch = Batch(
                     name=f.cleaned_data.get('name'),
                     description=f.cleaned_data.get('description'),
                     owner=user,
+                    team=team
                 )
                 batch.save()
                 messages.success(request, _(f'Your batch {batch.name} have been created.'))
@@ -211,6 +217,11 @@ def my_batches_view(request):
             'admin': admin,
             'batches': batches
         })
+
+
+class BatchTeamUpdateView(UpdateView):
+    model = BatchTeam
+    form_class = BatchTeamForm
 
 
 def close_batch_view(request, batch_id):
@@ -323,7 +334,7 @@ def get_batch_status_view(request):
     if admin:
         batches = Batch.objects.filter(status=Batch.OPEN).all()
     else:
-        batches = Batch.objects.filter(owner=user, status=Batch.OPEN).all()
+        batches = Batch.get_users_open_batches(user).all()
     statuses = []
     for batch in batches:
         status_obj = {

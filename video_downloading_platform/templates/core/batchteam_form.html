@@ -1,0 +1,27 @@
+{% extends "base.html" %}
+{% load crispy_forms_tags %}
+{% load humanize %}
+{% load i18n %}
+{% load static %}
+
+
+{% block content %}
+  <div class="row justify-content-center">
+    <div class="col-md-6">
+      <div class="mb-4">
+        <h2>{{ batchteam.batch.first.name }}</h2>
+        <p class="lead">{{ batchteam.batch.first.description }}</p>
+      </div>
+      <div>
+        <h3>{% trans "Select the people you want to share your collection with" %}</h3>
+        <form class="" method="post">
+          {% csrf_token %}
+          {{ form.media }}
+          {{ form|crispy }}
+          <script type="text/javascript" src="{% url 'jsi18n' %}"></script>
+          <button class="btn btn-primary" type="submit">{% translate "Save" %}</button>
+        </form>
+      </div>
+    </div>
+  </div>
+{% endblock %}

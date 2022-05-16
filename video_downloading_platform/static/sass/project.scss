@@ -47,3 +47,19 @@ $red: #b94a48;
 .blurred-image:hover {
   filter: blur(0);
 }
+
+
+.selector-available > h2 {
+  font-size: 1em;
+  padding: 3px;
+  color: rgb(33, 37, 41) !important;
+  background-color: rgb(248, 248, 248) !important;
+  margin-bottom: 0 !important;
+}
+.selector-chosen > h2 {
+  font-size: 1em;
+  padding: 3px;
+  color: rgb(33, 37, 41) !important;
+  background-color: rgb(248, 248, 248) !important;
+  margin-bottom: 0 !important;
+}

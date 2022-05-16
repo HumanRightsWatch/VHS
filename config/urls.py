@@ -4,7 +4,9 @@ from django.contrib import admin
 from django.contrib.auth.decorators import login_required
 from django.urls import include, path
 from django.views import defaults as default_views
+from django import views as django_views
 from django.views.generic import TemplateView
+from django.views.i18n import JavaScriptCatalog
 from rest_framework.authtoken.views import obtain_auth_token
 import notifications.urls
 
@@ -16,7 +18,7 @@ from video_downloading_platform.core.views import (
     get_downloaded_content_view,
     my_batches_view,
     get_downloaded_file_view, archive_batch_view, get_report_archive_view, get_batch_status_view,
-    get_unread_notifications_view, reopen_batch_view,
+    get_unread_notifications_view, reopen_batch_view, BatchTeamUpdateView,
 )
 
 urlpatterns = [
@@ -35,12 +37,15 @@ urlpatterns = [
 
                   path("notifications", get_unread_notifications_view, name="get_unread_notifications"),
 
+                  path(r'^jsi18n/$', JavaScriptCatalog.as_view(), name='jsi18n'),
+
                   path("batch/list", my_batches_view, name="batch_list"),
                   path("batch/statuses", get_batch_status_view, name="get_batch_status"),
                   path("batch/<str:batch_id>/close", close_batch_view, name="close_batch"),
                   path("batch/<str:batch_id>/reopen", reopen_batch_view, name="reopen_batch"),
                   path("batch/<str:batch_id>/archive", archive_batch_view, name="archive_batch"),
                   path("batch/<str:batch_id>/details", batch_details_view, name="batch_details"),
+                  path("batch_team/<int:pk>", BatchTeamUpdateView.as_view(), name="edit_batch_team"),
                   path("content/<str:content_id>", get_downloaded_file_view, name="get_downloaded_file"),
                   path("content/<str:content_id>/download", get_downloaded_content_view, name="get_downloaded_content"),
                   path("report/<str:report_id>/download", get_report_archive_view, name="get_report_archive"),

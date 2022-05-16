@@ -8,7 +8,6 @@
   <div class="row">
     {% include "partials/home_header.html" %}
   </div>
-
   <div class="row">
     <div class="col-md-5">
       <ul class="nav nav-tabs" id="actionTab" role="tablist">
@@ -73,9 +72,20 @@
               <div class="row">
                 <div class="col">
                   <span class="h5">{{ batch.name }}</span><br>
-                  <span class="small"><i class="fa fa-user" aria-hidden="true"></i> {{ batch.owner }}</span>
-                  <span class="small"><i class="fa fa-clock-o"
-                                         aria-hidden="true"></i> {{ batch.updated_at|naturaltime }}</span>
+                  <span class="small">
+                    <i class="fa fa-user text-primary" aria-hidden="true"></i>
+                    {{ batch.owner }}
+                  </span>
+                  <span class="small">
+                    <i class="fa fa-clock-o text-primary" aria-hidden="true"></i>
+                    {{ batch.updated_at|naturaltime }}
+                  </span>
+                  {% if user in batch.team.contributors.all %}
+                    <span class="small">
+                      <i class="fa fa-share-alt text-primary" aria-hidden="true"></i>
+                      {% trans "shared with me" %}
+                    </span>
+                  {% endif %}
                 </div>
                 <div class="col-md-4 text-right h4 clearfix">
                   <div class="pull-right">
@@ -83,26 +93,31 @@
                       <i class="fa fa-arrow-circle-right" aria-hidden="true"></i>
                       <span id="{{ batch.id }}_submitted" class="badge ">0</span>
                     </span>
-                      <span class="badge bg-success">
+                    <span class="badge bg-success">
                       <i class="fa fa-check-circle" aria-hidden="true"></i>
                       <span id="{{ batch.id }}_succeeded" class="badge ">0</span>
                     </span>
-                      <span class="badge bg-danger">
+                    <span class="badge bg-danger">
                       <i class="fa fa-times-circle" aria-hidden="true"></i>
                       <span id="{{ batch.id }}_failed" class="badge ">0</span>
                     </span>
-                    </div>
+                  </div>
                 </div>
               </div>
             </div>
             <div class="card-body">
-              <p class="mb-1">{{ batch.description }}</p>
+              <p class="lead">{{ batch.description }}</p>
             </div>
             <div class="card-footer">
               <div class="btn-group" role="group">
-                <a href="{% url 'close_batch' batch.id %}" class="btn btn-sm btn-secondary" role="button">
-                  <i class="fa fa-times" aria-hidden="true"></i> {% translate "Close" %}
-                </a>
+                {% if user == batch.owner %}
+                  <a href="{% url 'edit_batch_team' batch.team.id %}" class="btn btn-sm btn-primary" role="button">
+                    <i class="fa fa-share-alt" aria-hidden="true"></i> {% translate "Share" %}
+                  </a>
+                  <a href="{% url 'close_batch' batch.id %}" class="btn btn-sm btn-primary" role="button">
+                    <i class="fa fa-times" aria-hidden="true"></i> {% translate "Close" %}
+                  </a>
+                {% endif %}
                 <a href="{% url 'batch_details' batch.id %}" class="btn btn-sm btn-primary" role="button">
                   <i class="fa fa-search" aria-hidden="true"></i> {% translate "Details" %}
                 </a>

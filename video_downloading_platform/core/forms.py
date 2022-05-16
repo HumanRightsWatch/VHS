@@ -1,8 +1,26 @@
 from django import forms
+from django.contrib.admin.widgets import FilteredSelectMultiple
 from django.core.exceptions import ValidationError
 from django.utils.translation import gettext_lazy as _
 
-from video_downloading_platform.core.models import Batch, BatchRequest
+from video_downloading_platform.core.models import Batch, BatchRequest, BatchTeam
+
+
+class BatchTeamForm(forms.ModelForm):
+    class Meta:
+        model = BatchTeam
+        fields = [
+            'contributors'
+        ]
+        widgets = {
+            'contributors': FilteredSelectMultiple(is_stacked=False, verbose_name=_('Contributors')),
+        }
+
+    class Media:
+        css = {
+            'all': ('/static/admin/css/widgets.css',),
+        }
+        js = ('/admin/jsi18n',)
 
 
 class BatchRequestForm(forms.ModelForm):
