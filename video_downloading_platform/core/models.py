@@ -1,7 +1,7 @@
 import tempfile
 import uuid
 
-import youtube_dl
+import yt_dlp as youtube_dl
 from django.conf import settings
 from django.core.validators import URLValidator
 from django.db import models

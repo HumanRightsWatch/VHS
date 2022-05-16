@@ -8,7 +8,7 @@ import zipfile
 from os import path
 
 import exiftool
-import youtube_dl
+import yt_dlp as youtube_dl
 from django.core.files import File
 from django.urls import reverse_lazy
 from notifications.signals import notify
