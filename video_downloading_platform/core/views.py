@@ -5,6 +5,7 @@ from tempfile import NamedTemporaryFile
 from django.conf import settings
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
+from django.contrib.auth.mixins import LoginRequiredMixin
 from django.core.files import File
 from django.db import transaction
 from django.forms import model_to_dict
@@ -219,11 +220,13 @@ def my_batches_view(request):
         })
 
 
-class BatchTeamUpdateView(UpdateView):
+class BatchTeamUpdateView(UpdateView, LoginRequiredMixin):
     model = BatchTeam
     form_class = BatchTeamForm
 
 
+
+@login_required
 def close_batch_view(request, batch_id):
     user = request.user
     if not user.is_authenticated:
@@ -235,6 +238,7 @@ def close_batch_view(request, batch_id):
     return redirect(request.META.get('HTTP_REFERER'))
 
 
+@login_required
 def reopen_batch_view(request, batch_id):
     user = request.user
     if not user.is_authenticated:
@@ -287,6 +291,7 @@ def get_downloaded_file_view(request, content_id):
         return HttpResponse('')
 
 
+@login_required
 def get_unread_notifications_view(request):
     try:
         user_is_authenticated = request.user.is_authenticated()
