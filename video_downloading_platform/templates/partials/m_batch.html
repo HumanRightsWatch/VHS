@@ -21,7 +21,7 @@
         {% endif %}
         {% if batch.status == "CLOSED" %}
           <a href="{% url 'reopen_batch' batch.id %}" class="btn btn-sm btn-secondary" role="button">
-            <i class="fa fa-times" aria-hidden="true"></i> {% translate "Reopen" %}
+            <i class="fa fa-folder-open" aria-hidden="true"></i> {% translate "Reopen" %}
           </a>
         {% endif %}
         <a href="{% url 'archive_batch' batch.id %}" class="btn btn-sm btn-danger" role="button">
