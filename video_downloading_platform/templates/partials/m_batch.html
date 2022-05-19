@@ -13,23 +13,23 @@
     <div class="align-content-center">
       {% if batch.status != "ARCHIVED" %}
         <div class="btn-group" role="group">
-          {% if batch.status == "OPEN" %}
-            {% if user == batch.owner %}
+          {% if user == batch.owner %}
+            {% if batch.status == "OPEN" %}
               <a href="{% url 'edit_batch_team' batch.team.id %}" class="btn btn-sm btn-primary" role="button">
                 <i class="fa fa-share-alt" aria-hidden="true"></i> {% translate "Share" %}
               </a>
               <a href="{% url 'close_batch' batch.id %}" class="btn btn-sm btn-primary" role="button">
                 <i class="fa fa-times" aria-hidden="true"></i> {% translate "Close" %}
               </a>
-              {% if batch.status == "CLOSED" %}
-                <a href="{% url 'reopen_batch' batch.id %}" class="btn btn-sm btn-primary" role="button">
-                  <i class="fa fa-folder-open" aria-hidden="true"></i> {% translate "Reopen" %}
-                </a>
-              {% endif %}
-              <a href="{% url 'archive_batch' batch.id %}" class="btn btn-sm btn-danger" role="button">
-                <i class="fa fa-archive" aria-hidden="true"></i> {% translate "Archive" %}
+            {% endif %}
+            {% if batch.status == "CLOSED" %}
+              <a href="{% url 'reopen_batch' batch.id %}" class="btn btn-sm btn-primary" role="button">
+                <i class="fa fa-folder-open" aria-hidden="true"></i> {% translate "Reopen" %}
               </a>
             {% endif %}
+            <a href="{% url 'archive_batch' batch.id %}" class="btn btn-sm btn-danger" role="button">
+              <i class="fa fa-archive" aria-hidden="true"></i> {% translate "Archive" %}
+            </a>
           {% endif %}
         </div>
       {% endif %}
