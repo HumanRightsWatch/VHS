@@ -7,8 +7,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2022-05-16 12:54+0000\n"
-"PO-Revision-Date: 2022-05-16 14:56+0200\n"
+"POT-Creation-Date: 2022-05-19 09:45+0000\n"
+"PO-Revision-Date: 2022-05-19 11:47+0200\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "Language: fr\n"
@@ -27,10 +27,8 @@ msgid "Contributors"
 msgstr "Contributeur.ices"
 
 #: video_downloading_platform/core/forms.py:76
-#, fuzzy
-#| msgid "My collections"
 msgid "Collection"
-msgstr "Mes collections"
+msgstr "Collection"
 
 #: video_downloading_platform/core/forms.py:77
 msgid "Filename"
@@ -178,23 +176,23 @@ msgstr "Dernière modification du contenu téléchargé."
 msgid "Add more details about this file."
 msgstr "Ajouter plus de détails concernant le projet."
 
-#: video_downloading_platform/core/views.py:145
+#: video_downloading_platform/core/views.py:146
 #, python-brace-format
 msgid "Your batch {batch.name} have been created."
 msgstr "Votre batch {batch.name} a bien été créé."
 
-#: video_downloading_platform/core/views.py:153
-#: video_downloading_platform/core/views.py:237
-#: video_downloading_platform/core/views.py:248
+#: video_downloading_platform/core/views.py:155
+#: video_downloading_platform/core/views.py:241
+#: video_downloading_platform/core/views.py:253
 #, python-brace-format
 msgid "Your batch {batch.name} have been closed."
 msgstr "Votre batch {batch.name} a bien été clos."
 
-#: video_downloading_platform/core/views.py:176
+#: video_downloading_platform/core/views.py:179
 msgid "Your request has been successfully submitted."
 msgstr "Votre requête a bien été prise en compte."
 
-#: video_downloading_platform/core/views.py:257
+#: video_downloading_platform/core/views.py:262
 #, python-brace-format
 msgid "Your batch {batch.name} have been archived."
 msgstr "Votre collection {batch.name} a bien été archivée."
@@ -312,13 +310,6 @@ msgstr ""
 #: video_downloading_platform/templates/account/login.html:11
 #: video_downloading_platform/templates/base.html:72
 msgid "Sign In"
-msgstr ""
-
-#: video_downloading_platform/templates/account/login.html:28
-#, python-format
-msgid ""
-"If you have not created an account yet, then please\n"
-"<a href=\"%(signup_url)s\">sign up</a> first."
 msgstr ""
 
 #: video_downloading_platform/templates/account/logout.html:5
@@ -460,11 +451,21 @@ msgid ""
 msgstr ""
 
 #: video_downloading_platform/templates/core/batchteam_form.html:16
-msgid "Select the people you want to share your collection with"
-msgstr ""
-"Sélectionnez les personnes avec qui vous souhaitez partager cette collection"
+msgid "Select the contributors of your collection"
+msgstr "Sélectionnez les personnes pouvant contribuer à cette collection"
 
-#: video_downloading_platform/templates/core/batchteam_form.html:22
+#: video_downloading_platform/templates/core/batchteam_form.html:18
+msgid ""
+"Select the people you want to share your Collection with on the left, then "
+"click on the right arrow to move them to the panel on the right. When you "
+"have finished press the blue Save button"
+msgstr ""
+"Sélectionnez les personnes avec lesquelles vous souhaitez partager votre "
+"collection sur la gauche, puis cliquez sur la flèche de droite pour les "
+"déplacer vers le panneau de droite. Lorsque vous avez terminé, cliquez sur "
+"le bouton Enregistrer"
+
+#: video_downloading_platform/templates/core/batchteam_form.html:25
 msgid "Save"
 msgstr "Enregistrer"
 
@@ -564,14 +565,6 @@ msgstr "Contenu téléchargé :"
 msgid "Download archive"
 msgstr "Télécharger l'archive"
 
-#: video_downloading_platform/templates/partials/m_batch_details.html:56
-msgid "Status:"
-msgstr "Statut :"
-
-#: video_downloading_platform/templates/partials/m_batch_details.html:64
-msgid "updated"
-msgstr "mis-à-jour"
-
 #: video_downloading_platform/templates/partials/m_downloaded_contents.html:47
 msgid "View metadata"
 msgstr "Voir les meta-données"
@@ -616,6 +609,12 @@ msgstr ""
 #: video_downloading_platform/users/views.py:25
 msgid "Information successfully updated"
 msgstr ""
+
+#~ msgid "Status:"
+#~ msgstr "Statut :"
+
+#~ msgid "updated"
+#~ msgstr "mis-à-jour"
 
 #, fuzzy
 #~| msgid ""

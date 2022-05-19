@@ -13,7 +13,10 @@
         <p class="lead">{{ batchteam.batch.first.description }}</p>
       </div>
       <div>
-        <h3>{% trans "Select the people you want to share your collection with" %}</h3>
+        <h3>{% trans "Select the contributors of your collection" %}</h3>
+        <p>
+          {% trans "Select the people you want to share your Collection with on the left, then click on the right arrow to move them to the panel on the right. When you have finished press the blue Save button" %}
+        </p>
         <form class="" method="post">
           {% csrf_token %}
           {{ form.media }}

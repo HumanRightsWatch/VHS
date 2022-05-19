@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2022-05-16 12:54+0000\n"
+"POT-Creation-Date: 2022-05-19 09:45+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -171,23 +171,23 @@ msgstr ""
 msgid "Add more details about this file."
 msgstr ""
 
-#: video_downloading_platform/core/views.py:145
+#: video_downloading_platform/core/views.py:146
 #, python-brace-format
 msgid "Your batch {batch.name} have been created."
 msgstr ""
 
-#: video_downloading_platform/core/views.py:153
-#: video_downloading_platform/core/views.py:237
-#: video_downloading_platform/core/views.py:248
+#: video_downloading_platform/core/views.py:155
+#: video_downloading_platform/core/views.py:241
+#: video_downloading_platform/core/views.py:253
 #, python-brace-format
 msgid "Your batch {batch.name} have been closed."
 msgstr ""
 
-#: video_downloading_platform/core/views.py:176
+#: video_downloading_platform/core/views.py:179
 msgid "Your request has been successfully submitted."
 msgstr ""
 
-#: video_downloading_platform/core/views.py:257
+#: video_downloading_platform/core/views.py:262
 #, python-brace-format
 msgid "Your batch {batch.name} have been archived."
 msgstr ""
@@ -302,13 +302,6 @@ msgstr ""
 #: video_downloading_platform/templates/account/login.html:11
 #: video_downloading_platform/templates/base.html:72
 msgid "Sign In"
-msgstr ""
-
-#: video_downloading_platform/templates/account/login.html:28
-#, python-format
-msgid ""
-"If you have not created an account yet, then please\n"
-"<a href=\"%(signup_url)s\">sign up</a> first."
 msgstr ""
 
 #: video_downloading_platform/templates/account/logout.html:5
@@ -450,10 +443,17 @@ msgid ""
 msgstr ""
 
 #: video_downloading_platform/templates/core/batchteam_form.html:16
-msgid "Select the people you want to share your collection with"
+msgid "Select the contributors of your collection"
 msgstr ""
 
-#: video_downloading_platform/templates/core/batchteam_form.html:22
+#: video_downloading_platform/templates/core/batchteam_form.html:18
+msgid ""
+"Select the people you want to share your Collection with on the left, then "
+"click on the right arrow to move them to the panel on the right. When you "
+"have finished press the blue Save button"
+msgstr ""
+
+#: video_downloading_platform/templates/core/batchteam_form.html:25
 msgid "Save"
 msgstr ""
 
@@ -551,14 +551,6 @@ msgstr ""
 
 #: video_downloading_platform/templates/partials/m_batch_details.html:43
 msgid "Download archive"
-msgstr ""
-
-#: video_downloading_platform/templates/partials/m_batch_details.html:56
-msgid "Status:"
-msgstr ""
-
-#: video_downloading_platform/templates/partials/m_batch_details.html:64
-msgid "updated"
 msgstr ""
 
 #: video_downloading_platform/templates/partials/m_downloaded_contents.html:47
