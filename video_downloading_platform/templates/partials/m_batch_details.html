@@ -4,68 +4,84 @@
 {% for request in batch.download_requests.all %}
   {% with in_error=request.report.first.in_error %}
     <div class="col-md-12 mb-4">
-    <div class="card" id="{{ request.id }}">
-      {% if in_error %}
-        <div class="card-header bg-danger bg-opacity-25">
-      {% else %}
-        <div class="card-header bg-success bg-opacity-25">
-      {% endif %}
-      <samp>{{ request.url }}</samp>
-      </div>
-      <div class="card-body">
-        <div class="row">
-          <div class="col">
-            <p>
-              {% translate "Creation date:" %} {{ request.created_at }}
-            </p>
-            {% if in_error %}
-              <p>
-                <a href="#" data-bs-toggle="modal" data-bs-target="#errorModal-{{ request.id }}">
-                  {% translate "See error log" %}
-                </a>
-              </p>
-              {% include "partials/m_modal_error.html" with id=request.id error_message=request.report.first.error_message %}
-            {% endif %}
-            <span>{% translate "Downloaded content:" %}</span>
-            {% include "partials/m_downloaded_contents.html" %}
+      {% if request.is_hidden %}
+        <div class="card text-muted" id="{{ request.id }}">
+          <div class="card-header bg-secondary bg-opacity-25">
+            <a href="{% url "hide_download_request" request.id %}" class="btn btn-sm btn-secondary">
+              <i class="fa fa-folder-open" aria-hidden="true"></i> {% trans "Recover" %}
+            </a>
+            <samp>{{ request.url }}</samp>
           </div>
-          {% with thumbnail=request.report.first.get_thumbnail %}
-            {% if batch_status != "ARCHIVED" %}
-              <div class="col-md-2 text-center">
-                {% if thumbnail %}
-                  <div>
-                    <img src="{{ thumbnail }}" class="img-fluid rounded-start blurred-image" alt="...">
+        </div>
+      {% else %}
+        <div class="card" id="{{ request.id }}">
+          {% if in_error %}
+            <div class="card-header bg-danger bg-opacity-25">
+          {% else %}
+            <div class="card-header bg-success bg-opacity-25">
+          {% endif %}
+          <a href="{% url "hide_download_request" request.id %}" class="btn btn-sm btn-warning">
+            <i class="fa fa-trash" aria-hidden="true"></i> {% trans "Delete" %}
+          </a>
+          <samp>{{ request.url }}</samp>
+          </div>
+          <div class="card-body">
+            <div class="row">
+              <div class="col">
+                <p>
+                  {% translate "Creation date:" %} {{ request.created_at }}
+                </p>
+                {% if in_error %}
+                  <p>
+                    <a href="#" data-bs-toggle="modal" data-bs-target="#errorModal-{{ request.id }}">
+                      {% translate "See error log" %}
+                    </a>
+                  </p>
+                  {% include "partials/m_modal_error.html" with id=request.id error_message=request.report.first.error_message %}
+                {% endif %}
+                <span>{% translate "Downloaded content:" %}</span>
+                {% include "partials/m_downloaded_contents.html" %}
+              </div>
+              {% with thumbnail=request.report.first.get_thumbnail %}
+                {% if batch_status != "ARCHIVED" %}
+                  <div class="col-md-2 text-center">
+                    {% if thumbnail %}
+                      <div>
+                        <img src="{{ thumbnail }}" class="img-fluid rounded-start blurred-image" alt="...">
+                      </div>
+                    {% endif %}
+                    <div class="mt-2">
+                      {% if request.report.first.archive %}
+                        <a href="{% url "get_report_archive" request.report.first.id %}" class="btn btn-secondary">
+                          <i class="fa fa-download" aria-hidden="true"></i> {% trans "Download archive" %}
+                        </a>
+                      {% endif %}
+                    </div>
                   </div>
                 {% endif %}
-                <div class="mt-2">
-                  {% if request.report.first.archive %}
-                    <a href="{% url "get_report_archive" request.report.first.id %}" class="btn btn-secondary">
-                      <i class="fa fa-download" aria-hidden="true"></i> {% trans "Download archive" %}
-                    </a>
-                  {% endif %}
-                </div>
+              {% endwith %}
+            </div>
+          </div>
+          <div class="card-footer">
+            <div class="row">
+              <div class="col text-md-end">
+              <span><i class="fa fa-clock-o text-primary"
+                       aria-hidden="true"></i> {{ request.updated_at|naturaltime }}</span>
+                <span><i class="fa fa-user text-primary" aria-hidden="true"></i> {{ request.owner }}</span>
+                <span>|</span>
+                {% if request.status == 'SUCCEEDED' %}
+                  <span class="badge bg-success">{{ request.get_status_display }}</span>
+                {% elif request.status == 'FAILED' %}
+                  <span class="badge bg-danger">{{ request.get_status_display }}</span>
+                {% else %}
+                  <span class="badge bg-info">{{ request.get_status_display }}</span>
+                {% endif %}
               </div>
-            {% endif %}
-          {% endwith %}
-        </div>
-      </div>
-      <div class="card-footer">
-        <div class="row">
-          <div class="col text-md-end">
-            <span><i class="fa fa-clock-o text-primary" aria-hidden="true"></i> {{ request.updated_at|naturaltime }}</span>
-            <span><i class="fa fa-user text-primary" aria-hidden="true"></i> {{ request.owner }}</span>
-            <span>|</span>
-            {% if request.status == 'SUCCEEDED' %}
-              <span class="badge bg-success">{{ request.get_status_display }}</span>
-            {% elif request.status == 'FAILED' %}
-              <span class="badge bg-danger">{{ request.get_status_display }}</span>
-            {% else %}
-              <span class="badge bg-info">{{ request.get_status_display }}</span>
-            {% endif %}
+            </div>
+          </div>
           </div>
         </div>
-      </div>
-      </div>
+      {% endif %}
     </div>
   {% endwith %}
 {% endfor %}

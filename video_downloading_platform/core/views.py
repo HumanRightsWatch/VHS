@@ -398,3 +398,25 @@ def download_collection_zip_view(request, batch_id):
     response = HttpResponse(tmp, content_type='application/zip')
     response['Content-Disposition'] = f'attachment; filename=VHS-{collection.owner}-{collection.name}.zip'
     return response
+
+
+@login_required
+def hide_download_request_view(request, request_id):
+    try:
+        download_request = DownloadRequest.objects.get(id=request_id)
+        download_request.is_hidden = True
+        download_request.save()
+    except Exception:
+        pass
+    return redirect(request.META.get('HTTP_REFERER'))
+
+
+@login_required
+def show_download_request_view(request, request_id):
+    try:
+        download_request = DownloadRequest.objects.get(id=request_id)
+        download_request.is_hidden = False
+        download_request.save()
+    except Exception:
+        pass
+    return redirect(request.META.get('HTTP_REFERER'))

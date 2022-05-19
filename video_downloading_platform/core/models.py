@@ -279,6 +279,9 @@ class DownloadRequest(models.Model):
         on_delete=models.CASCADE,
         related_name='download_requests'
     )
+    is_hidden = models.BooleanField(
+        default=False
+    )
 
     def start(self):
         from video_downloading_platform.core.tasks import run_download_video_request, run_download_gallery_request
