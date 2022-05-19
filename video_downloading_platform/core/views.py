@@ -389,7 +389,7 @@ def download_collection_zip_view(request, batch_id):
         for download_request in collection.download_requests.all():
             for download_report in download_request.report.all():
                 if download_report.archive:
-                    filename = f'{download_request.id}.zip'
+                    filename = f'{download_report.id}.zip'
                     data = download_report.archive.file.read()
                     zip_file.writestr(filename, data)
         zip_file.close()
