@@ -22,11 +22,7 @@
 
 </div>
 
-{% include "socialaccount/snippets/login_extra.html" %}
-
-{% else %}
-<p>{% blocktranslate %}If you have not created an account yet, then please
-<a href="{{ signup_url }}">sign up</a> first.{% endblocktranslate %}</p>
+{#{% include "socialaccount/snippets/login_extra.html" %}#}
 {% endif %}
 
 {% endblock %}
