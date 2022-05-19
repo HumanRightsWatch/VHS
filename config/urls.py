@@ -37,7 +37,7 @@ urlpatterns = [
 
                   path("notifications", get_unread_notifications_view, name="get_unread_notifications"),
 
-                  path(r'^jsi18n/$', JavaScriptCatalog.as_view(), name='jsi18n'),
+                  path(r'jsi18n/', JavaScriptCatalog.as_view(), name='jsi18n'),
 
                   path("batch/list", my_batches_view, name="batch_list"),
                   path("batch/statuses", get_batch_status_view, name="get_batch_status"),
