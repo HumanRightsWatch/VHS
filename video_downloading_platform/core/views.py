@@ -1,5 +1,7 @@
 import os.path
 import traceback
+import zipfile
+from io import BytesIO
 from tempfile import NamedTemporaryFile
 
 from django.conf import settings
@@ -376,4 +378,23 @@ def get_report_archive_view(request, report_id):
     report = DownloadReport.objects.get(id=report_id)
     response = HttpResponse(report.archive, content_type='application/zip')
     response['Content-Disposition'] = 'inline; filename=' + report.archive.name
+    return response
+
+
+@login_required
+def download_collection_zip_view(request, batch_id):
+    collection = Batch.objects.get(id=batch_id)
+    tmp = BytesIO()
+    with zipfile.ZipFile(tmp, 'w') as zip_file:
+        for download_request in collection.download_requests.all():
+            for download_report in download_request.report.all():
+                if download_report.archive:
+                    filename = f'{download_request.id}.zip'
+                    data = download_report.archive.file.read()
+                    zip_file.writestr(filename, data)
+        zip_file.close()
+        tmp.flush()
+    tmp.seek(0)
+    response = HttpResponse(tmp, content_type='application/zip')
+    response['Content-Disposition'] = f'attachment; filename=VHS-{collection.owner}-{collection.name}.zip'
     return response

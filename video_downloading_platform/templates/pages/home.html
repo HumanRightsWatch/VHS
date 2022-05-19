@@ -117,6 +117,9 @@
                   <a href="{% url 'close_batch' batch.id %}" class="btn btn-sm btn-primary" role="button">
                     <i class="fa fa-times" aria-hidden="true"></i> {% translate "Close" %}
                   </a>
+                  <a href="{% url 'download_batch_archive' batch.id %}" class="btn btn-sm btn-primary" role="button">
+                    <i class="fa fa-download" aria-hidden="true"></i> {% translate "Download" %}
+                  </a>
                 {% endif %}
                 <a href="{% url 'batch_details' batch.id %}" class="btn btn-sm btn-primary" role="button">
                   <i class="fa fa-search" aria-hidden="true"></i> {% translate "Details" %}

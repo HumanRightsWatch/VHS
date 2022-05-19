@@ -27,6 +27,9 @@
                 <i class="fa fa-folder-open" aria-hidden="true"></i> {% translate "Reopen" %}
               </a>
             {% endif %}
+            <a href="{% url 'download_batch_archive' batch.id %}" class="btn btn-sm btn-primary" role="button">
+              <i class="fa fa-download" aria-hidden="true"></i> {% translate "Download" %}
+            </a>
 {#            <a href="{% url 'archive_batch' batch.id %}" class="btn btn-sm btn-danger" role="button">#}
 {#              <i class="fa fa-archive" aria-hidden="true"></i> {% translate "Archive" %}#}
 {#            </a>#}
