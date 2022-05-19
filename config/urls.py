@@ -1,15 +1,13 @@
+import notifications.urls
 from django.conf import settings
 from django.conf.urls.static import static
 from django.contrib import admin
 from django.contrib.auth.decorators import login_required
 from django.urls import include, path
 from django.views import defaults as default_views
-from django import views as django_views
 from django.views.generic import TemplateView
 from django.views.i18n import JavaScriptCatalog
 from rest_framework.authtoken.views import obtain_auth_token
-import notifications.urls
-
 
 from video_downloading_platform.core.views import (
     home_view,

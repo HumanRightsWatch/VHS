@@ -229,7 +229,6 @@ class BatchTeamUpdateView(UpdateView, LoginRequiredMixin):
     form_class = BatchTeamForm
 
 
-
 @login_required
 def close_batch_view(request, batch_id):
     user = request.user
