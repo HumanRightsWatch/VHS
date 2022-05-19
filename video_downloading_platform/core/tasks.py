@@ -255,6 +255,20 @@ def create_zip_archive(report_id):
                             'path': out.name,
                             'name': downloaded_content.name,
                         })
+                    if downloaded_content.exif_data:
+                        with open(f'{tmp_dir}/{downloaded_content.name}-exif.json', mode='w') as out:
+                            out.write(json.dumps(downloaded_content.exif_data, indent=2))
+                        files_to_archive.append({
+                            'path': out.name,
+                            'name': f'{downloaded_content.name}-exif.json',
+                        })
+                    if downloaded_content.metadata:
+                        with open(f'{tmp_dir}/{downloaded_content.name}-metadata.json', mode='w') as out:
+                            out.write(json.dumps(downloaded_content.metadata, indent=2))
+                        files_to_archive.append({
+                            'path': out.name,
+                            'name': f'{downloaded_content.name}-metadata.json',
+                        })
 
             with open(f'{tmp_dir}/archive.zip', mode='wb') as tmp:
                 zf = zipfile.ZipFile(tmp, "w")
