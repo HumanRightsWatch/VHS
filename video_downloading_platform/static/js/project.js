@@ -28,7 +28,8 @@ function reapply_toaster_visibility() {
 
 function mark_notif_as_read(id) {
     jQuery.get(`/inbox/notifications/delete/${id}`);
-    fetch_api_data();
+    const notification = jQuery(`#notif-${id}`);
+    notification.hide();
 }
 
 function notification_toaster_callback(data) {

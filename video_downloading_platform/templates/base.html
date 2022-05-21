@@ -58,9 +58,9 @@
           <li class="nav-item active">
             <a class="nav-link" href="{% url 'home' %}">Home <span class="visually-hidden">(current)</span></a>
           </li>
-{#          <li class="nav-item">#}
-{#            <a class="nav-link" href="{% url 'about' %}">About</a>#}
-{#          </li>#}
+          {#          <li class="nav-item">#}
+          {#            <a class="nav-link" href="{% url 'about' %}">About</a>#}
+          {#          </li>#}
           {% if request.user.is_authenticated %}
             <li class="nav-item">
               {# URL provided by django-allauth/account/urls.py #}
@@ -76,9 +76,13 @@
       </div>
       {% if request.user.is_authenticated %}
         <div class="d-flex mr-5">
-          <button type="button" class="btn nav-link" id="notification_toaster_btn">
-            {% live_notify_badge %} notifications
-          </button>
+          <a type="button" class="btn btn-primary position-relative" href="{% url 'get_notification_list' %}">
+            <i class="fa fa-bell"></i>
+            <span class="position-absolute top-0 start-0 translate-middle badge rounded-pill bg-danger">
+              {% live_notify_badge %}
+              <span class="visually-hidden">unread messages</span>
+            </span>
+          </a>
         </div>
       {% endif %}
     </div>
@@ -101,9 +105,6 @@
     <p>Use this document as a way to quick start any new project.</p>
   {% endblock content %}
 
-
-  <div id="notification_toaster" class="position-fixed bottom-0 end-0 p-3" style="z-index: 11">
-  </div>
 </div> <!-- /container -->
 
 {% block modal %}{% endblock modal %}
@@ -113,13 +114,6 @@
 
   <script>
     window.addEventListener('DOMContentLoaded', () => {
-      const toastTrigger = jQuery('#notification_toaster_btn');
-      const toastLive = jQuery('#notification_toaster');
-      if (toastTrigger) {
-        toastTrigger.click(function () {
-          toggle_toaster();
-        })
-      }
       update_batch_statuses();
       setTimeout(update_batch_statuses, 10000);
     });

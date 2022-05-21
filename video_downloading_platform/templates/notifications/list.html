@@ -1,0 +1,49 @@
+{% extends "base.html" %}
+{% load humanize %}
+{% load i18n %}
+{% load static %}
+
+{% block content %}
+  <div class="row justify-content-center">
+    <div class="col-md-18 text-center mb-4">
+      <a href="{% url 'mark_all_notification_read' %}" class="btn btn-lg btn-primary">
+        Mark all as read
+      </a>
+    </div>
+    {% for notif in notifications %}
+      <div class="col-md-7">
+        <div class="card mb-4" id="notif-{{ notif.slug }}">
+          <div class="card-header">
+            <div class="row">
+              <div class="col">
+                {% if notif.level == "info" %}
+                  <span class="badge bg-success mr-2"><i class="fa fa-info" aria-hidden="true"></i></span>
+                {% elif notif.level == "error" %}
+                  <span class="badge bg-danger mr-2"><i class="fa fa-times" aria-hidden="true"></i></span>
+                {% endif %}
+                <strong class="me-auto">VHS</strong>
+                <small class="text-muted">{{ notif.timestamp|naturaltime }}</small>
+              </div>
+              <div class="col-md-1 text-right clearfix">
+                <div class="pull-right">
+                  <button type="button" class="btn close close-notif"
+                          onclick="mark_notif_as_read({{ notif.slug }})">
+                    <i class="fa fa-times" aria-hidden="true"></i>
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="card-body">
+            {{ notif.description }}
+            <div>
+              {% for a in notif.data.actions %}
+                <a href="{{ a.url }}">{{ a.title }}</a>
+              {% endfor %}
+            </div>
+          </div>
+        </div>
+      </div>
+    {% endfor %}
+  </div>
+{% endblock %}
