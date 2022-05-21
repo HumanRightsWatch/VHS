@@ -7,7 +7,7 @@ from django.urls import include, path
 from django.views import defaults as default_views
 from django.views.generic import TemplateView
 from django.views.i18n import JavaScriptCatalog
-from notifications.views import NotificationViewList, UnreadNotificationsList
+from notifications.views import UnreadNotificationsList
 from rest_framework.authtoken.views import obtain_auth_token
 
 from video_downloading_platform.core.views import (
@@ -17,7 +17,7 @@ from video_downloading_platform.core.views import (
     get_downloaded_content_view,
     my_batches_view,
     get_downloaded_file_view, archive_batch_view, get_report_archive_view, get_batch_status_view,
-    get_unread_notifications_view, reopen_batch_view, BatchTeamUpdateView, download_collection_zip_view,
+    reopen_batch_view, BatchTeamUpdateView, download_collection_zip_view,
     hide_download_request_view, show_download_request_view, mark_all_notification_read_view,
 )
 

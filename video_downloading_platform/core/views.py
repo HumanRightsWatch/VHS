@@ -421,6 +421,7 @@ def show_download_request_view(request, request_id):
         pass
     return redirect(request.META.get('HTTP_REFERER'))
 
+
 @login_required
 def mark_all_notification_read_view(request):
     request.user.notifications.mark_all_as_read()
