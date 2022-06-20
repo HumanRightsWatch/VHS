@@ -79,6 +79,7 @@ THIRD_PARTY_APPS = [
     "tinymce",
     "django_q",
     "minio_storage",
+    "taggit",
 ]
 
 SOCIALACCOUNT_PROVIDERS = {
@@ -312,6 +313,9 @@ REST_FRAMEWORK = {
 CORS_URLS_REGEX = r"^/api/.*$"
 DJANGO_NOTIFICATIONS_CONFIG = {'USE_JSONFIELD': True}
 MARKDOWNIFY_MARKDOWN_EXTENSIONS = ['markdown.extensions.nl2br']
+
+# Taggit
+TAGGIT_CASE_INSENSITIVE = True
 
 # Django Q
 Q_CLUSTER = {

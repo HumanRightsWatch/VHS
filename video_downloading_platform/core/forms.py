@@ -29,7 +29,7 @@ class BatchRequestForm(forms.ModelForm):
         fields = [
             'batch',
             'urls',
-            'type'
+            'type',
         ]
         labels = {
             'batch': 'Collection',
@@ -60,7 +60,8 @@ class BatchForm(forms.ModelForm):
         model = Batch
         fields = [
             'name',
-            'description'
+            'description',
+            'tags'
         ]
         widgets = {
             'description': forms.Textarea(attrs={'rows': 2, 'cols': 20}),

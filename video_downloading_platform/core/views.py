@@ -138,13 +138,19 @@ def home_view(request):
                     owner=user
                 )
                 team.save()
-                batch = Batch(
-                    name=f.cleaned_data.get('name'),
-                    description=f.cleaned_data.get('description'),
-                    owner=user,
-                    team=team
-                )
+                batch = f.save(commit=False)
+                batch.owner = user
+                batch.team = team
                 batch.save()
+                f.save_m2m()
+                # batch = Batch(
+                #     name=f.cleaned_data.get('name'),
+                #     description=f.cleaned_data.get('description'),
+                #     tags=f.cleaned_data.get('tags'),
+                #     owner=user,
+                #     team=team
+                # )
+                # batch.save()
                 messages.success(request, _(f'Your batch {batch.name} have been created.'))
                 return redirect(request.META.get('HTTP_REFERER'))
             else:

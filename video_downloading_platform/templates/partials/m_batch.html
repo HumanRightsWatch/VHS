@@ -6,6 +6,11 @@
       <span class="badge bg-secondary">{{ batch.download_requests.count }}</span>
       {{ batch.name }}
     </h1>
+    {% if batch.tags.all %}
+      <div>
+      {% include "partials/m_batch_tags.html" with batch=batch %}
+      </div>
+    {% endif %}
 
     <p class="lead">
       {{ batch.description }}

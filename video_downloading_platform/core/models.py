@@ -10,6 +10,18 @@ from django.utils.translation import gettext_lazy as _
 from django_q.humanhash import HumanHasher
 from django_q.tasks import async_task
 from gallery_dl.extractor import find as gdl_find_extractors
+from taggit.managers import TaggableManager
+from taggit.models import GenericUUIDTaggedItemBase, TaggedItemBase
+
+
+class UUIDTaggedItem(GenericUUIDTaggedItemBase, TaggedItemBase):
+    # If you only inherit GenericUUIDTaggedItemBase, you need to define
+    # a tag field. e.g.
+    # tag = models.ForeignKey(Tag, related_name="uuid_tagged_items", on_delete=models.CASCADE)
+
+    class Meta:
+        verbose_name = _("Tag")
+        verbose_name_plural = _("Tags")
 
 
 def _generate_random_name():
@@ -102,7 +114,7 @@ class Batch(models.Model):
         related_name='my_batches',
         editable=False
     )
-
+    tags = TaggableManager(through=UUIDTaggedItem)
     team = models.ForeignKey(
         BatchTeam,
         on_delete=models.CASCADE,

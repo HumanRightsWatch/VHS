@@ -104,6 +104,11 @@
                   </div>
                 </div>
               </div>
+              <div class="row">
+                <div class="col-md-12">
+                  {% include "partials/m_batch_tags.html" with batch=batch %}
+                </div>
+              </div>
             </div>
             <div class="card-body">
               <p class="lead">{{ batch.description }}</p>
