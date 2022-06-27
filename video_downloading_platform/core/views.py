@@ -169,11 +169,11 @@ def home_view(request):
                 request_type = f.cleaned_data.get('type')
                 batch = f.cleaned_data.get('batch')
                 urls = f.cleaned_data.get('urls').splitlines()
+                tasks_to_start = []
                 for url in urls:
                     striped_url = url.strip()
                     if len(striped_url) > 0:
                         tasks_to_run = _get_request_types_to_run(url, request_type)
-                        tasks_to_start = []
                         for request_type in tasks_to_run:
                             dl_request = DownloadRequest.objects.create(
                                 batch=batch,
