@@ -23,7 +23,12 @@
           <a href="{% url "hide_download_request" request.id %}" class="btn btn-sm btn-warning">
             <i class="fa fa-trash" aria-hidden="true"></i> {% trans "Delete" %}
           </a>
-          <samp>{{ request.url }}</samp>
+            {% if request.type == "VIDEO" %}
+              <i class="fa fa-video"></i>
+            {% elif  request.type == "GALLERY" %}
+              <i class="fa fa-picture-o"></i>
+            {% endif %}
+            <samp>{{ request.url }}</samp>
           </div>
           <div class="card-body">
             <div class="row">
