@@ -183,7 +183,7 @@ def home_view(request):
                             )
                             dl_request.save()
                             tasks_to_start.append(dl_request)
-                        transaction.on_commit(lambda: _start_pending_requests(tasks_to_start))
+                transaction.on_commit(lambda: _start_pending_requests(tasks_to_start))
                 messages.success(request, _('Your request has been successfully submitted.'))
                 return redirect(request.META.get('HTTP_REFERER'))
             else:
