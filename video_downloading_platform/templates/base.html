@@ -118,7 +118,7 @@
       setTimeout(update_batch_statuses, 10000);
     });
   </script>
-  {% register_notify_callbacks callbacks='notification_toaster_callback,fill_notification_badge' %}
+  {% register_notify_callbacks callbacks='fill_notification_badge' %}
 {% endif %}
 {% block inline_javascript %}
   {% comment %}
