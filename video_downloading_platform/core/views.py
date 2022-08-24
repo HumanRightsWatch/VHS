@@ -16,6 +16,7 @@ from django.shortcuts import render, redirect
 from django.urls import reverse_lazy
 from django.utils.translation import gettext as _
 from django.views.generic import UpdateView
+from django.utils import timezone
 from notifications.signals import notify
 from notifications.utils import id2slug
 
@@ -169,6 +170,8 @@ def home_view(request):
                 request_type = f.cleaned_data.get('type')
                 batch = f.cleaned_data.get('batch')
                 urls = f.cleaned_data.get('urls').splitlines()
+                batch.updated_at = timezone.now()
+                batch.save()
                 tasks_to_start = []
                 for url in urls:
                     striped_url = url.strip()
