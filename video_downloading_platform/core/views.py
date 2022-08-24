@@ -15,6 +15,7 @@ from django.http import HttpResponse, JsonResponse
 from django.shortcuts import render, redirect, get_object_or_404
 from django.urls import reverse_lazy
 from django.utils.translation import gettext as _
+from django.views.decorators.csrf import csrf_exempt
 from django.views.generic import UpdateView
 from django.utils import timezone
 from notifications.signals import notify
@@ -35,7 +36,8 @@ def handle_file_upload(request, upload_form):
         batch=batch,
         status=DownloadRequest.Status.PROCESSING,
         url='http://dummy.url.local',
-        owner=user
+        owner=user,
+        content_warning=upload_form.cleaned_data.get('content_warning')
     )
     download_request.save()
     download_report = DownloadReport(
@@ -72,6 +74,7 @@ def handle_file_upload(request, upload_form):
                 exif_data=exif_data,
                 mime_type=mime_type,
                 target_file=True,
+                content_warning=upload_form.cleaned_data.get('content_warning'),
                 description=upload_form.cleaned_data['description']
             )
             downloaded_content.save()
@@ -182,7 +185,8 @@ def home_view(request):
                                 batch=batch,
                                 url=striped_url,
                                 owner=user,
-                                type=request_type
+                                type=request_type,
+                                content_warning=f.cleaned_data.get('content_warning')
                             )
                             dl_request.save()
                             tasks_to_start.append(dl_request)
@@ -452,3 +456,5 @@ def batch_edit_view(request, batch_id):
             'batch': batch
         }
     )
+
+

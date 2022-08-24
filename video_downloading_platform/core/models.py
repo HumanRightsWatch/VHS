@@ -294,6 +294,12 @@ class DownloadRequest(models.Model):
     is_hidden = models.BooleanField(
         default=False
     )
+    content_warning = models.TextField(
+        help_text=_('Add a content warning.'),
+        default=_('No warning'),
+        null=True,
+        blank=True
+    )
 
     def start(self):
         from video_downloading_platform.core.tasks import run_download_video_request, run_download_gallery_request
@@ -382,6 +388,12 @@ class BatchRequest(models.Model):
     owner = models.ForeignKey(
         settings.AUTH_USER_MODEL,
         on_delete=models.DO_NOTHING
+    )
+    content_warning = models.TextField(
+        help_text=_('Add a content warning.'),
+        default=_('No warning'),
+        null=True,
+        blank=True
     )
 
 
@@ -504,6 +516,13 @@ class DownloadedContent(models.Model):
         blank=True
     )
     exif_data = models.JSONField(
+        null=True,
+        blank=True
+    )
+    tags = TaggableManager(through=UUIDTaggedItem)
+    content_warning = models.TextField(
+        help_text=_('Add a content warning.'),
+        default=_('No warning'),
         null=True,
         blank=True
     )

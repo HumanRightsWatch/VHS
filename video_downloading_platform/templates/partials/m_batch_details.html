@@ -1,6 +1,8 @@
 {% load humanize %}
 {% load i18n %}
 
+{% csrf_token %}
+
 {% for request in batch.download_requests.all %}
   {% with in_error=request.report.first.in_error %}
     <div class="col-md-12 mb-4">
@@ -33,9 +35,19 @@
           <div class="card-body">
             <div class="row">
               <div class="col">
-                <p>
+                <div>
+                  <span class="text-danger">
+                    <i class="fa fa-warning"></i>
+                    {% if request.content_warning %}
+                      {{ request.content_warning }}
+                    {% else %}
+                      {% translate "no warning" %}
+                    {% endif %}
+                  </span>
+                </div>
+                <div>
                   {% translate "Creation date:" %} {{ request.created_at }}
-                </p>
+                </div>
                 {% if in_error %}
                   <p>
                     <a href="#" data-bs-toggle="modal" data-bs-target="#errorModal-{{ request.id }}">
@@ -44,7 +56,9 @@
                   </p>
                   {% include "partials/m_modal_error.html" with id=request.id error_message=request.report.first.error_message %}
                 {% endif %}
-                <span>{% translate "Downloaded content:" %}</span>
+                <div>
+                  {% translate "Downloaded content:" %}
+                </div>
                 {% include "partials/m_downloaded_contents.html" %}
               </div>
               {% with thumbnail=request.report.first.get_thumbnail %}

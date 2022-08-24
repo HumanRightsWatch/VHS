@@ -29,10 +29,14 @@ class BatchRequestForm(forms.ModelForm):
         fields = [
             'batch',
             'urls',
+            'content_warning',
             'type',
         ]
         labels = {
             'batch': 'Collection',
+        }
+        widgets = {
+            'content_warning': forms.Textarea(attrs={'rows': 2, 'cols': 20}),
         }
 
     def __init__(self, *args, **kwargs):
@@ -78,6 +82,11 @@ class UploadForm(forms.Form):
     name = forms.CharField(label=_('Filename'), max_length=100)
     description = forms.CharField(
         label=_('Description'),
+        max_length=2000,
+        required=False,
+        widget=forms.Textarea(attrs={'rows': 2, 'cols': 20}))
+    content_warning = forms.CharField(
+        label=_('Content warning'),
         max_length=200,
         required=False,
         widget=forms.Textarea(attrs={'rows': 2, 'cols': 20}))

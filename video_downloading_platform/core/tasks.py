@@ -72,7 +72,7 @@ def _get_exif_data_for_file(file_path):
     return {}
 
 
-def _manage_downloaded_files(directory, owner, download_report, request_type=None):
+def _manage_downloaded_files(directory, owner, download_report, cw, request_type=None):
     for downloaded_file in glob.glob(f'{directory}/*', recursive=True):
         sha256, md5 = hash_file(downloaded_file)
         cleaned_name = downloaded_file.replace(directory, '')
@@ -100,7 +100,8 @@ def _manage_downloaded_files(directory, owner, download_report, request_type=Non
             metadata=metadata,
             target_file=is_target,
             exif_data=exif_data,
-            mime_type=mime_type
+            mime_type=mime_type,
+            content_warning=cw,
         )
         downloaded_content.save()
         mode = 'rb'
@@ -134,7 +135,8 @@ def run_download_video_request(download_request_id):
                 print('downloading video', download_request.url)
                 ydl.download([download_request.url])
 
-            _manage_downloaded_files(tmp_dir, owner, download_report, download_request.type)
+            _manage_downloaded_files(tmp_dir, owner, download_report, download_request.content_warning,
+                                     download_request.type)
 
             download_request.status = DownloadRequest.Status.SUCCEEDED
             download_request.save()
@@ -200,7 +202,8 @@ def run_download_gallery_request(download_request_id):
             config.set((), "base-directory", tmp_dir)
             job.DownloadJob(download_request.url).run()
 
-            _manage_downloaded_files(tmp_dir, owner, download_report, download_request.type)
+            _manage_downloaded_files(tmp_dir, owner, download_report, download_request.content_warning,
+                                     download_request.type)
 
             download_request.status = DownloadRequest.Status.SUCCEEDED
             download_request.save()
