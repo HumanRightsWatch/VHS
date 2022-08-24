@@ -12,7 +12,7 @@ from django.core.files import File
 from django.db import transaction
 from django.forms import model_to_dict
 from django.http import HttpResponse, JsonResponse
-from django.shortcuts import render, redirect
+from django.shortcuts import render, redirect, get_object_or_404
 from django.urls import reverse_lazy
 from django.utils.translation import gettext as _
 from django.views.generic import UpdateView
@@ -435,3 +435,20 @@ def show_download_request_view(request, request_id):
 def mark_all_notification_read_view(request):
     request.user.notifications.mark_all_as_read()
     return redirect(request.META.get('HTTP_REFERER'))
+
+
+@login_required
+def batch_edit_view(request, batch_id):
+    batch = get_object_or_404(Batch, id=batch_id)
+    form = BatchForm(request.POST or None, instance=batch)
+    if form.is_valid():
+        form.save()
+        return redirect('batch_details', batch_id=batch_id)
+    return render(
+        request,
+        'core/batch_edit_form.html',
+        {
+            'form': form,
+            'batch': batch
+        }
+    )

@@ -1,0 +1,22 @@
+{% extends "base.html" %}
+{% load crispy_forms_tags %}
+{% load humanize %}
+{% load i18n %}
+{% load static %}
+
+{% block content %}
+  <div class="row justify-content-center">
+    <div class="col-md-6">
+      <div class="mb-4">
+        <h2>{% translate "Edit the collection" %} {{ batch.name }}</h2>
+      </div>
+      <div>
+          <form method="post">
+            {% csrf_token %}
+            {{ form|crispy }}
+            <button class="btn btn-primary" type="submit" name="save_batch">{% translate "Update" %}</button>
+          </form>
+      </div>
+    </div>
+  </div>
+{% endblock %}
