@@ -2,6 +2,7 @@
 {% load vhs_filters %}
 
 {% for content in request.report.first.downloadedcontent_set.all %}
+  {% if not ".json" in content.name and not ".description" in content.name %}
   <div class="rounded border p-2 mb-2">
     <div class="row">
       <div class="col-md-12 fs-5 text-primary ">
@@ -59,7 +60,7 @@
       </div>
     {% endif %}
   </div>
-
+  {% endif %}
 
 {% empty %}
   <p>{% translate "nothing :(" %}</p>
