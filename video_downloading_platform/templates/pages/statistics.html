@@ -1,0 +1,82 @@
+{% extends "base.html" %}
+{% load crispy_forms_tags %}
+{% load humanize %}
+{% load i18n %}
+{% load static %}
+
+{% block content %}
+  <div class="row justify-content-md-center g-4">
+    <div class="col-md-2">
+      <div class="card shadow-sm h-100">
+        <div class="card-body text-center">
+          <h5 class="card-title">Disk usage</h5>
+          <p class="fs-2 text-info mb-2">{{ stats.disk.percent }}%</p>
+          <p class="text-muted">Free: {{ stats.disk.free|filesizeformat }}/{{ stats.disk.total|filesizeformat }}</p>
+          <div class="progress">
+            <div class="progress-bar bg-info" role="progressbar" aria-label="Info example" style="width: {{ stats.disk.percent }}%"
+                 aria-valuenow="{{ stats.disk.percent }}" aria-valuemin="0" aria-valuemax="100"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-md-2">
+      <div class="card shadow-sm h-100">
+        <div class="card-body text-center">
+          <h5 class="card-title">Memory usage</h5>
+          <p class="fs-2 text-info mb-2">{{ stats.mem.percent }}%</p>
+          <p class="text-muted">Free: {{ stats.mem.free|filesizeformat }}/{{ stats.mem.total|filesizeformat }}</p>
+          <div class="progress">
+            <div class="progress-bar bg-info" role="progressbar" aria-label="Info example" style="width: {{ stats.mem.percent }}%"
+                 aria-valuenow="{{ stats.mem.percent }}" aria-valuemin="0" aria-valuemax="100"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-md-2">
+      <div class="card shadow-sm h-100">
+        <div class="card-body text-center">
+          <h5 class="card-title">Download request</h5>
+          <p class="fs-2 text-info mb-2">{{ stats.requests.total }}</p>
+          <p class="text-muted">
+            <span class="text-success">Succeeded: {{ stats.requests.succeeded }}</span> -
+            <span class="text-warning">Failed: {{ stats.requests.failed }}</span>
+          </p>
+          <div class="progress">
+            <div class="progress-bar bg-info" role="progressbar" aria-label="Info example" style="width: {{ stats.requests.percent }}%"
+                 aria-valuenow="{{ stats.requests.percent }}" aria-valuemin="0" aria-valuemax="100"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-md-2">
+      <div class="card shadow-sm h-100">
+        <div class="card-body text-center">
+          <h5 class="card-title">Downloaded files</h5>
+          <p class="fs-1 text-info mt-4">{{ stats.files }}</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-md-2">
+      <div class="card shadow-sm h-100">
+        <div class="card-body text-center">
+          <h5 class="card-title">Collections</h5>
+          <p class="fs-1 text-info mt-4">{{ stats.collections }}</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-md-2">
+      <div class="card shadow-sm h-100">
+        <div class="card-body text-center">
+          <h5 class="card-title">Registered users</h5>
+          <p class="fs-1 text-info mt-4">{{ stats.users }}</p>
+        </div>
+      </div>
+    </div>
+
+  </div>
+{% endblock %}

@@ -3,7 +3,6 @@ import traceback
 import zipfile
 from io import BytesIO
 from tempfile import NamedTemporaryFile
-
 from django.conf import settings
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
@@ -13,6 +12,7 @@ from django.db import transaction
 from django.forms import model_to_dict
 from django.http import HttpResponse, JsonResponse
 from django.shortcuts import render, redirect, get_object_or_404
+from django.test.runner import partition_suite_by_type
 from django.urls import reverse_lazy
 from django.utils.translation import gettext as _
 from django.views.generic import UpdateView
@@ -25,6 +25,7 @@ from video_downloading_platform.core.forms import BatchForm, BatchRequestForm, U
 from video_downloading_platform.core.models import Batch, DownloadRequest, DownloadedContent, DownloadReport, \
     _get_request_types_to_run, BatchTeam
 from video_downloading_platform.core.tasks import hash_file, create_zip_archive, _get_exif_data_for_file, get_mimetype
+from video_downloading_platform.users.admin import User
 
 
 def handle_file_upload(request, upload_form):
@@ -457,14 +458,6 @@ def batch_edit_view(request, batch_id):
             'title': _('Edit collection')
         }
     )
-    # return render(
-    #     request,
-    #     'core/batch_edit_form.html',
-    #     {
-    #         'form': form,
-    #         'batch': batch
-    #     }
-    # )
 
 
 @login_required
@@ -483,3 +476,67 @@ def edit_download_request_view(request, request_id):
             'title': _('Edit tags and content warning')
         }
     )
+
+
+@login_required
+def statistics_view(request):
+    import psutil
+    disk_usage = psutil.disk_usage('/')
+    mem_usage = psutil.virtual_memory()
+    request_total = DownloadRequest.objects.all().count()
+    request_succeeded = DownloadRequest.objects.filter(status=DownloadRequest.Status.SUCCEEDED).count()
+    request_failed = DownloadRequest.objects.filter(status=DownloadRequest.Status.FAILED).count()
+    stats = {
+            'disk': {
+                'total': disk_usage[0],
+                'used': disk_usage[1],
+                'free': disk_usage[2],
+                'percent': disk_usage[3],
+                'chart': '',
+            },
+            'mem': {
+                'total': mem_usage[0],
+                'free': mem_usage[1],
+                'percent': mem_usage[2],
+            },
+            'collections': Batch.objects.all().count(),
+            'requests': {
+                'total': request_total,
+                'succeeded': request_succeeded,
+                'failed': request_failed,
+                'percent': 100*request_failed/(1.0*request_total)
+            },
+            'files': DownloadedContent.objects.all().count(),
+            'users': User.objects.all().count(),
+        }
+    return render(
+        request,
+        'pages/statistics.html',
+        {
+            'stats': stats,
+        }
+    )
+    # return JsonResponse(
+    #     {
+    #         'disk': {
+    #             'total': disk_usage[0],
+    #             'used': disk_usage[1],
+    #             'free': disk_usage[2],
+    #             'percent': disk_usage[3],
+    #             'chart': '',
+    #         },
+    #         'mem': {
+    #             'total': mem_usage[0],
+    #             'available': mem_usage[1],
+    #             'percent': mem_usage[2],
+    #         },
+    #         'collections': Batch.objects.all().count(),
+    #         'requests': {
+    #             'total': DownloadRequest.objects.all().count(),
+    #             'succeeded': DownloadRequest.objects.filter(status=DownloadRequest.Status.SUCCEEDED).count(),
+    #             'failed': DownloadRequest.objects.filter(status=DownloadRequest.Status.FAILED).count(),
+    #         },
+    #         'files': DownloadedContent.objects.all().count(),
+    #         'users': User.objects.all().count(),
+    #     }
+    # )

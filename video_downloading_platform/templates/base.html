@@ -68,6 +68,11 @@
             </li>
             {% if request.user.is_superuser %}
               <li class="nav-item">
+                <a class="nav-link" href="{% url 'statistics' %}">
+                  Analytics
+                </a>
+              </li>
+              <li class="nav-item">
                 <a class="nav-link" href="{% url 'admin:index' %}">
                   Administration panel
                 </a>
