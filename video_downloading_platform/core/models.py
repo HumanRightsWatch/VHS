@@ -114,7 +114,7 @@ class Batch(models.Model):
         related_name='my_batches',
         editable=False
     )
-    tags = TaggableManager(through=UUIDTaggedItem)
+    tags = TaggableManager(through=UUIDTaggedItem, blank=True)
     team = models.ForeignKey(
         BatchTeam,
         on_delete=models.CASCADE,
@@ -300,7 +300,7 @@ class DownloadRequest(models.Model):
         null=True,
         blank=True
     )
-    tags = TaggableManager(through=UUIDTaggedItem)
+    tags = TaggableManager(through=UUIDTaggedItem, blank=True)
 
     def start(self):
         from video_downloading_platform.core.tasks import run_download_video_request, run_download_gallery_request
