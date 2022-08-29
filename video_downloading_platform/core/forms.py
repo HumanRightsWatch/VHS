@@ -3,7 +3,7 @@ from django.contrib.admin.widgets import FilteredSelectMultiple
 from django.core.exceptions import ValidationError
 from django.utils.translation import gettext_lazy as _
 
-from video_downloading_platform.core.models import Batch, BatchRequest, BatchTeam
+from video_downloading_platform.core.models import Batch, BatchRequest, BatchTeam, DownloadRequest
 
 
 class BatchTeamForm(forms.ModelForm):
@@ -21,6 +21,15 @@ class BatchTeamForm(forms.ModelForm):
             'all': ('/static/admin/css/widgets.css',),
         }
         js = ('/admin/jsi18n',)
+
+
+class DownloadRequestLightForm(forms.ModelForm):
+    class Meta:
+        model = DownloadRequest
+        fields = [
+            'tags',
+            'content_warning',
+        ]
 
 
 class BatchRequestForm(forms.ModelForm):

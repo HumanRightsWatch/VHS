@@ -15,13 +15,13 @@ from django.http import HttpResponse, JsonResponse
 from django.shortcuts import render, redirect, get_object_or_404
 from django.urls import reverse_lazy
 from django.utils.translation import gettext as _
-from django.views.decorators.csrf import csrf_exempt
 from django.views.generic import UpdateView
 from django.utils import timezone
 from notifications.signals import notify
 from notifications.utils import id2slug
 
-from video_downloading_platform.core.forms import BatchForm, BatchRequestForm, UploadForm, BatchTeamForm
+from video_downloading_platform.core.forms import BatchForm, BatchRequestForm, UploadForm, BatchTeamForm, \
+    DownloadRequestLightForm
 from video_downloading_platform.core.models import Batch, DownloadRequest, DownloadedContent, DownloadReport, \
     _get_request_types_to_run, BatchTeam
 from video_downloading_platform.core.tasks import hash_file, create_zip_archive, _get_exif_data_for_file, get_mimetype
@@ -447,14 +447,39 @@ def batch_edit_view(request, batch_id):
     form = BatchForm(request.POST or None, instance=batch)
     if form.is_valid():
         form.save()
-        return redirect('batch_details', batch_id=batch_id)
+        return redirect(request.META.get('HTTP_REFERER'))
     return render(
         request,
-        'core/batch_edit_form.html',
+        'partials/m_modal_form.html',
         {
             'form': form,
-            'batch': batch
+            'action': reverse_lazy('batch_edit', args=[batch.id]),
+            'title': _('Edit collection')
         }
     )
+    # return render(
+    #     request,
+    #     'core/batch_edit_form.html',
+    #     {
+    #         'form': form,
+    #         'batch': batch
+    #     }
+    # )
 
 
+@login_required
+def edit_download_request_view(request, request_id):
+    request_obj = get_object_or_404(DownloadRequest, id=request_id)
+    form = DownloadRequestLightForm(request.POST or None, instance=request_obj)
+    if form.is_valid():
+        form.save()
+        return redirect(request.META.get('HTTP_REFERER'))
+    return render(
+        request,
+        'partials/m_modal_form.html',
+        {
+            'form': form,
+            'action': reverse_lazy('edit_download_request', args=[request_obj.id]),
+            'title': _('Edit tags and content warning')
+        }
+    )

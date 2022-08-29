@@ -66,6 +66,13 @@
               {# URL provided by django-allauth/account/urls.py #}
               <a class="nav-link" href="{% url 'account_logout' %}">{% translate "Sign Out" %}</a>
             </li>
+            {% if request.user.is_superuser %}
+              <li class="nav-item">
+                <a class="nav-link" href="{% url 'admin:index' %}">
+                  Administration panel
+                </a>
+              </li>
+            {% endif %}
           {% else %}
             <li class="nav-item">
               {# URL provided by django-allauth/account/urls.py #}
@@ -90,7 +97,7 @@
 
 </div>
 
-<div class="container-fluid mb-5">
+<div class="container-fluid mb-5" id="container">
 
   {% if messages %}
     {% for message in messages %}

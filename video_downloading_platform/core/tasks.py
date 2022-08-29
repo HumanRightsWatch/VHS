@@ -101,7 +101,6 @@ def _manage_downloaded_files(directory, owner, download_report, cw, request_type
             target_file=is_target,
             exif_data=exif_data,
             mime_type=mime_type,
-            content_warning=cw,
         )
         downloaded_content.save()
         mode = 'rb'

@@ -54,3 +54,15 @@ function update_batch_statuses() {
 
     setTimeout(update_batch_statuses, 10000);
 }
+
+function show_modal_form(url){
+    jQuery.get(url, function (data){
+        const container = jQuery('#container');
+        container.append(data);
+        const modal = jQuery('#formModal');
+        modal.modal('show');
+        modal.on('hidden.bs.modal', event => {
+          modal.remove();
+        })
+    })
+}

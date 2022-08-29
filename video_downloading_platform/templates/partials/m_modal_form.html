@@ -1,0 +1,26 @@
+{% load crispy_forms_tags %}
+{% load humanize %}
+{% load i18n %}
+{% load static %}
+
+<div class="modal" id="formModal" tabindex="-1" aria-labelledby="formModalLabel" aria-hidden="false">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5>{{ title }}</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <div class="row">
+          <div class="col-md-10">
+            <form method="post" action="{{ action }}">
+              {% csrf_token %}
+              {{ form|crispy }}
+              <button class="btn btn-primary" type="submit">{% translate "Save" %}</button>
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

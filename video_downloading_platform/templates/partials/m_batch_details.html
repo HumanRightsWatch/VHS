@@ -1,8 +1,6 @@
 {% load humanize %}
 {% load i18n %}
 
-{% csrf_token %}
-
 {% for request in batch.download_requests.all %}
   {% with in_error=request.report.first.in_error %}
     <div class="col-md-12 mb-4">
@@ -27,7 +25,7 @@
           </a>
             {% if request.type == "VIDEO" %}
               <i class="fa fa-video"></i>
-            {% elif  request.type == "GALLERY" %}
+            {% elif request.type == "GALLERY" %}
               <i class="fa fa-picture-o"></i>
             {% endif %}
             <samp>{{ request.url }}</samp>
@@ -36,14 +34,23 @@
             <div class="row">
               <div class="col">
                 <div>
-                  <span class="text-danger">
-                    <i class="fa fa-warning"></i>
-                    {% if request.content_warning %}
+                  {% if request.content_warning %}
+                    <span class="text-danger">
+                      <i class="fa fa-warning"></i>
                       {{ request.content_warning }}
-                    {% else %}
+                    </span>
+                  {% else %}
+                    <span class="text-success">
+                      <i class="fa fa-warning"></i>
                       {% translate "no warning" %}
-                    {% endif %}
-                  </span>
+                    </span>
+                  {% endif %}
+                  <a href="#" onclick="show_modal_form('{% url "edit_download_request" request.id %}')">
+                    <i class="fa fa-pencil"></i>
+                  </a>
+                </div>
+                <div>
+                  {% include "partials/m_download_request_tags.html" %}
                 </div>
                 <div>
                   {% translate "Creation date:" %} {{ request.created_at }}

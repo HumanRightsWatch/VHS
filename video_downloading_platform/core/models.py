@@ -300,6 +300,7 @@ class DownloadRequest(models.Model):
         null=True,
         blank=True
     )
+    tags = TaggableManager(through=UUIDTaggedItem)
 
     def start(self):
         from video_downloading_platform.core.tasks import run_download_video_request, run_download_gallery_request
@@ -516,13 +517,6 @@ class DownloadedContent(models.Model):
         blank=True
     )
     exif_data = models.JSONField(
-        null=True,
-        blank=True
-    )
-    tags = TaggableManager(through=UUIDTaggedItem)
-    content_warning = models.TextField(
-        help_text=_('Add a content warning.'),
-        default=_('No warning'),
         null=True,
         blank=True
     )
