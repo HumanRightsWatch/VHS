@@ -12,7 +12,6 @@ from django.db import transaction
 from django.forms import model_to_dict
 from django.http import HttpResponse, JsonResponse
 from django.shortcuts import render, redirect, get_object_or_404
-from django.test.runner import partition_suite_by_type
 from django.urls import reverse_lazy
 from django.utils.translation import gettext as _
 from django.views.generic import UpdateView
