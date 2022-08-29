@@ -7,7 +7,7 @@
       {% if request.is_hidden %}
         <div class="card text-muted" id="{{ request.id }}">
           <div class="card-header bg-secondary bg-opacity-25">
-            <a href="{% url "hide_download_request" request.id %}" class="btn btn-sm btn-secondary">
+            <a href="{% url "show_download_request" request.id %}" class="btn btn-sm btn-secondary">
               <i class="fa fa-folder-open" aria-hidden="true"></i> {% trans "Recover" %}
             </a>
             <samp>{{ request.url }}</samp>
