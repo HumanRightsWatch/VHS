@@ -503,7 +503,7 @@ def statistics_view(request):
                 'total': request_total,
                 'succeeded': request_succeeded,
                 'failed': request_failed,
-                'percent': 100*request_failed/(1.0*request_total)
+                'percent': 100*request_succeeded/(1.0*request_total)
             },
             'files': DownloadedContent.objects.all().count(),
             'users': User.objects.all().count(),
