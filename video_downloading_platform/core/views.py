@@ -74,7 +74,6 @@ def handle_file_upload(request, upload_form):
                 exif_data=exif_data,
                 mime_type=mime_type,
                 target_file=True,
-                content_warning=upload_form.cleaned_data.get('content_warning'),
                 description=upload_form.cleaned_data['description']
             )
             downloaded_content.save()
