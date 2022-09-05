@@ -282,6 +282,8 @@ def batch_details_view(request, batch_id):
     user_groups = user.groups.values_list('name', flat=True)
     admin = 'admin' in user_groups
     batch = Batch.objects.get(id=batch_id)
+    # for r in batch.download_requests.all():
+    #     index_download_request(r.id)
     return render(
         request,
         'pages/batch_details.html',
@@ -476,6 +478,58 @@ def edit_download_request_view(request, request_id):
     )
 
 
+def __get_user_space_usage(user_id):
+    from django.db import connection
+    with connection.cursor() as cursor:
+        cursor.execute(f"""SELECT sum(text(exif_data->'File:FileSize')::int) as space
+                FROM core_downloadedcontent
+                WHERE jsonb_exists(exif_data, 'File:FileSize') AND owner_id={user_id}
+                GROUP BY owner_id""")
+        row = cursor.fetchone()
+    return row[0]
+
+
+def __get_user_stats():
+    stats = []
+    for user in User.objects.all():
+        used_disk_space = -1
+        try:
+            used_disk_space = __get_user_space_usage(user.id)
+        except Exception:
+            pass
+        data = {
+            'name': user.username,
+            'collections': Batch.objects.filter(owner=user).count(),
+            'requests': DownloadRequest.objects.filter(owner=user).count(),
+            'files': DownloadedContent.objects.filter(owner=user).count(),
+            'used_disk_space': used_disk_space,
+        }
+        stats.append(data)
+    return stats
+
+
+def dictfetchall(cursor):
+    "Return all rows from a cursor as a dict"
+    columns = [col[0] for col in cursor.description]
+    return [
+        dict(zip(columns, row))
+        for row in cursor.fetchall()
+    ]
+
+
+def __get_failures_per_domain():
+    from django.db import connection
+    with connection.cursor() as cursor:
+        cursor.execute(
+            """SELECT count(id) as failure, split_part(url, '/', 3) as domain
+            FROM core_downloadrequest
+            WHERE status='FAILED' AND length(split_part(url, '/', 3))>1
+            GROUP BY domain
+            ORDER BY failure desc
+            LIMIT 25""")
+        return dictfetchall(cursor)
+
+
 @login_required
 def statistics_view(request):
     import psutil
@@ -485,28 +539,30 @@ def statistics_view(request):
     request_succeeded = DownloadRequest.objects.filter(status=DownloadRequest.Status.SUCCEEDED).count()
     request_failed = DownloadRequest.objects.filter(status=DownloadRequest.Status.FAILED).count()
     stats = {
-            'disk': {
-                'total': disk_usage[0],
-                'used': disk_usage[1],
-                'free': disk_usage[2],
-                'percent': disk_usage[3],
-                'chart': '',
-            },
-            'mem': {
-                'total': mem_usage[0],
-                'free': mem_usage[1],
-                'percent': mem_usage[2],
-            },
-            'collections': Batch.objects.all().count(),
-            'requests': {
-                'total': request_total,
-                'succeeded': request_succeeded,
-                'failed': request_failed,
-                'percent': 100*request_succeeded/(1.0*request_total)
-            },
-            'files': DownloadedContent.objects.all().count(),
-            'users': User.objects.all().count(),
-        }
+        'disk': {
+            'total': disk_usage[0],
+            'used': disk_usage[1],
+            'free': disk_usage[2],
+            'percent': disk_usage[3],
+            'chart': '',
+        },
+        'mem': {
+            'total': mem_usage[0],
+            'free': mem_usage[1],
+            'percent': mem_usage[2],
+        },
+        'failures': __get_failures_per_domain(),
+        'user_stats': __get_user_stats(),
+        'collections': Batch.objects.all().count(),
+        'requests': {
+            'total': request_total,
+            'succeeded': request_succeeded,
+            'failed': request_failed,
+            'percent': 100 * request_succeeded / (1.0 * request_total)
+        },
+        'files': DownloadedContent.objects.all().count(),
+        'users': User.objects.all().count(),
+    }
     return render(
         request,
         'pages/statistics.html',
@@ -514,27 +570,3 @@ def statistics_view(request):
             'stats': stats,
         }
     )
-    # return JsonResponse(
-    #     {
-    #         'disk': {
-    #             'total': disk_usage[0],
-    #             'used': disk_usage[1],
-    #             'free': disk_usage[2],
-    #             'percent': disk_usage[3],
-    #             'chart': '',
-    #         },
-    #         'mem': {
-    #             'total': mem_usage[0],
-    #             'available': mem_usage[1],
-    #             'percent': mem_usage[2],
-    #         },
-    #         'collections': Batch.objects.all().count(),
-    #         'requests': {
-    #             'total': DownloadRequest.objects.all().count(),
-    #             'succeeded': DownloadRequest.objects.filter(status=DownloadRequest.Status.SUCCEEDED).count(),
-    #             'failed': DownloadRequest.objects.filter(status=DownloadRequest.Status.FAILED).count(),
-    #         },
-    #         'files': DownloadedContent.objects.all().count(),
-    #         'users': User.objects.all().count(),
-    #     }
-    # )

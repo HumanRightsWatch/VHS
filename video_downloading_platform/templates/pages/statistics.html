@@ -13,7 +13,8 @@
           <p class="fs-2 text-info mb-2">{{ stats.disk.percent }}%</p>
           <p class="text-muted">Free: {{ stats.disk.free|filesizeformat }}/{{ stats.disk.total|filesizeformat }}</p>
           <div class="progress">
-            <div class="progress-bar bg-info" role="progressbar" aria-label="Info example" style="width: {{ stats.disk.percent }}%"
+            <div class="progress-bar bg-info" role="progressbar" aria-label="Info example"
+                 style="width: {{ stats.disk.percent }}%"
                  aria-valuenow="{{ stats.disk.percent }}" aria-valuemin="0" aria-valuemax="100"></div>
           </div>
         </div>
@@ -27,7 +28,8 @@
           <p class="fs-2 text-info mb-2">{{ stats.mem.percent }}%</p>
           <p class="text-muted">Free: {{ stats.mem.free|filesizeformat }}/{{ stats.mem.total|filesizeformat }}</p>
           <div class="progress">
-            <div class="progress-bar bg-info" role="progressbar" aria-label="Info example" style="width: {{ stats.mem.percent }}%"
+            <div class="progress-bar bg-info" role="progressbar" aria-label="Info example"
+                 style="width: {{ stats.mem.percent }}%"
                  aria-valuenow="{{ stats.mem.percent }}" aria-valuemin="0" aria-valuemax="100"></div>
           </div>
         </div>
@@ -44,7 +46,8 @@
             <span class="text-warning">Failed: {{ stats.requests.failed }}</span>
           </p>
           <div class="progress">
-            <div class="progress-bar bg-info" role="progressbar" aria-label="Info example" style="width: {{ stats.requests.percent }}%"
+            <div class="progress-bar bg-info" role="progressbar" aria-label="Info example"
+                 style="width: {{ stats.requests.percent }}%"
                  aria-valuenow="{{ stats.requests.percent }}" aria-valuemin="0" aria-valuemax="100"></div>
           </div>
         </div>
@@ -77,6 +80,56 @@
         </div>
       </div>
     </div>
-
   </div>
+  <div class="row justify-content-md-center g-4 mt-2">
+    <div class="col-md-4">
+      <div class="card shadow-sm h-100">
+        <div class="card-body text-center">
+          <h5 class="card-title">Users</h5>
+          <table class="table table-borderless text-end">
+            {% for u in stats.user_stats|dictsortreversed:'used_disk_space' %}
+              <tr>
+                <td class="text-start">
+                  <i class="fa fa-user text-primary"></i>
+                  {{ u.name }}
+                </td>
+                <td>
+                  {{ u.collections }} <span class="text-muted small">collections</span>
+                </td>
+                <td>
+                  {{ u.files }} <span class="text-muted small">files</span>
+                </td>
+                <td>
+                  {{ u.used_disk_space|filesizeformat }}
+                </td>
+              </tr>
+            {% endfor %}
+          </table>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-4">
+      <div class="card shadow-sm h-100">
+        <div class="card-body text-center">
+          <h5 class="card-title">Failure per domain</h5>
+          <table class="table table-borderless text-end">
+            {% for f in stats.failures %}
+              <tr>
+                <td>
+                  <code>
+                    {{ f.domain }}
+                  </code>
+                </td>
+                <td class="text-start">
+                  {{ f.failure }} <span class="text-muted small">failures</span>
+                </td>
+              </tr>
+            {% endfor %}
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+
+
 {% endblock %}
