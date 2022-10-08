@@ -5,6 +5,8 @@ import yt_dlp as youtube_dl
 from django.conf import settings
 from django.core.validators import URLValidator
 from django.db import models
+from django.db.models.signals import pre_delete
+from django.dispatch import receiver
 from django.urls import reverse_lazy, reverse
 from django.utils.translation import gettext_lazy as _
 from django_q.humanhash import HumanHasher
@@ -539,3 +541,13 @@ class DownloadedContent(models.Model):
         except Exception as e:
             print(e)
         return None
+
+
+@receiver(pre_delete, sender=DownloadedContent, dispatch_uid='delete_stored_file')
+def delete_downloaded_content_stored_files(sender, instance: DownloadedContent, using, **kwargs):
+    instance.content.delete()
+
+
+@receiver(pre_delete, sender=DownloadReport, dispatch_uid='delete_stored_archive_file')
+def delete_download_report_stored_files(sender, instance: DownloadReport, using, **kwargs):
+    instance.archive.delete()
