@@ -90,7 +90,6 @@ def validate_batch(batch_id):
 
 class UploadForm(forms.Form):
     upload_request = forms.CharField(
-        label=_(''),
         max_length=64,
         required=True,
         widget=forms.HiddenInput()
