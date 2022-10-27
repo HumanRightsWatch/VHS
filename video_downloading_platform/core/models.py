@@ -302,7 +302,6 @@ class DownloadRequest(models.Model):
     )
     content_warning = models.TextField(
         help_text=_('Add a content warning.'),
-        default=_('No warning'),
         null=True,
         blank=True
     )
@@ -398,7 +397,6 @@ class BatchRequest(models.Model):
     )
     content_warning = models.TextField(
         help_text=_('Add a content warning.'),
-        default=_('No warning'),
         null=True,
         blank=True
     )
