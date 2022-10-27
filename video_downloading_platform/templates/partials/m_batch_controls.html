@@ -3,6 +3,9 @@
 {% if batch.status != "ARCHIVED" %}
   <div class="btn-group" role="group">
     {% if batch.status == "OPEN" %}
+      <a href="{% url 'add_content_to_batch' batch.id %}" class="btn btn-sm btn-primary" role="button">
+        <i class="fa fa-plus" aria-hidden="true"></i> {% translate "Add content" %}
+      </a>
       <a href="{% url 'edit_batch_team' batch.team.id %}" class="btn btn-sm btn-primary" role="button">
         <i class="fa fa-share-alt" aria-hidden="true"></i> {% translate "Share" %}
       </a>

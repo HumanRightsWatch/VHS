@@ -1,0 +1,35 @@
+{% load i18n %}
+<div class="col-md-8">
+  <h1>
+    <span class="badge bg-secondary">{{ batch.download_requests.count }}</span>
+    {{ batch.name }}
+  </h1>
+  {% if batch.tags.all %}
+    <div>
+      {% include "partials/m_batch_tags.html" with batch=batch %}
+    </div>
+  {% endif %}
+
+  <p class="lead">
+    {{ batch.description }}
+  </p>
+  <div class="align-content-center">
+    {% include "partials/m_batch_controls.html" with batch=batch show_details_btn=show_details_btn %}
+  </div>
+</div>
+<div class="col-md-4 mb-4">
+  <p>
+    <i class="fa fa-user-circle-o text-primary" aria-hidden="true"></i> {{ batch.owner }}
+    <span class="text-muted">
+        ({% trans "owner" %})
+      </span>
+  </p>
+  {% trans "Collection shared with: " %}
+  <ul>
+    {% for contrib in batch.team.contributors.all %}
+      <li><i class="fa fa-user text-success" aria-hidden="true"></i> {{ contrib }}</li>
+    {% empty %}
+      <li>{% trans "Nobody" %}</li>
+    {% endfor %}
+  </ul>
+</div>

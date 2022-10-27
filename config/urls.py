@@ -20,7 +20,7 @@ from video_downloading_platform.core.views import (
     get_downloaded_file_view, archive_batch_view, get_report_archive_view, get_batch_status_view,
     reopen_batch_view, BatchTeamUpdateView, download_collection_zip_view,
     hide_download_request_view, show_download_request_view, mark_all_notification_read_view, batch_edit_view,
-    edit_download_request_view, statistics_view,
+    edit_download_request_view, statistics_view, add_content_to_batch_view,
 )
 urlpatterns = [
                   path("", home_view, name="home"),
@@ -43,6 +43,7 @@ urlpatterns = [
                   path("inbox/read_all", mark_all_notification_read_view, name="mark_all_notification_read"),
                   path("batch/list", my_batches_view, name="batch_list"),
                   path("batch/statuses", get_batch_status_view, name="get_batch_status"),
+                  path("batch/<str:batch_id>/add", add_content_to_batch_view, name="add_content_to_batch"),
                   path("batch/<str:batch_id>/close", close_batch_view, name="close_batch"),
                   path("batch/<str:batch_id>/reopen", reopen_batch_view, name="reopen_batch"),
                   path("batch/<str:batch_id>/archive", archive_batch_view, name="archive_batch"),

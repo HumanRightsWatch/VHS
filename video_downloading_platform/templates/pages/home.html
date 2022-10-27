@@ -9,51 +9,6 @@
     {% include "partials/home_header.html" %}
   </div>
   <div class="row">
-    <div class="col-md-5">
-      <ul class="nav nav-tabs" id="actionTab" role="tablist">
-        <li class="nav-item" role="presentation">
-          <button class="nav-link {% if not ul_request_form.errors %}active{% endif %} h4" id="download-tab"
-                  data-bs-toggle="tab" data-bs-target="#download-tab-form"
-                  type="button" role="tab" aria-controls="download-tab-form"
-                  aria-selected="{% if ul_request_form.errors %}false{% else %}true{% endif %}">
-            {% translate "Download" %}
-          </button>
-        </li>
-        <li class="nav-item" role="presentation">
-          <button class="nav-link h4 {% if ul_request_form.errors %}active{% endif %}" id="upload-tab"
-                  data-bs-toggle="tab" data-bs-target="#upload-tab-form" type="button"
-                  role="tab" aria-controls="upload-tab-form"
-                  aria-selected="{% if ul_request_form.errors %}true{% else %}false{% endif %}">
-            {% translate "Upload" %}
-          </button>
-        </li>
-      </ul>
-      <div class="tab-content" id="myTabContent">
-        <div class="tab-pane fade {% if not ul_request_form.errors %}show active{% endif %}" id="download-tab-form"
-             role="tabpanel" aria-labelledby="download-tab">
-          <form method="post">
-            {% csrf_token %}
-            {{ dl_request_form|crispy }}
-            <button class="btn btn-primary" type="submit" name="request_download">{% translate "Submit" %}</button>
-          </form>
-        </div>
-        <div class="tab-pane fade{% if ul_request_form.errors %}show active{% endif %}" id="upload-tab-form"
-             role="tabpanel" aria-labelledby="upload-tab">
-          <input id="fileupload" class="form-control" type="file">
-          <div id="uploaded_files" class="mb-2"></div>
-          <form method="post" enctype="multipart/form-data">
-            {% csrf_token %}
-            {{ ul_request_form|crispy }}
-            <p class="text-muted">
-              {% translate "Select your file then click on Upload. Fill the rest of the form and click on Save." %}
-            </p>
-            <button class="btn btn-primary" id="upload_submit_btn" type="submit" name="request_upload">{% translate "Save" %}</button>
-            <button class="btn btn-primary" id="upload_btn">{% translate "Upload" %}</button>
-          </form>
-        </div>
-      </div>
-    </div>
-
     <div class="col-md-7">
       <h2>
         {% translate "My collections" %}
@@ -61,16 +16,6 @@
           {% translate "View all" %}
         </a>
       </h2>
-      <div class="card mb-4">
-        <div class="card-body">
-          <form method="post">
-            {% csrf_token %}
-            {{ batch_form|crispy }}
-            <button class="btn btn-primary" type="submit" name="save_batch">{% translate "Create" %}</button>
-          </form>
-        </div>
-      </div>
-
       <div id="batch-list">
         {% for batch in users_batches %}
           <div class="card mb-2">
@@ -126,48 +71,19 @@
         {% endfor %}
       </div>
     </div>
+
+    <div class="col-md-5">
+      <h2>{% translate "Create new collection" %}</h2>
+      <div class="card mb-4">
+        <div class="card-body">
+          <form method="post">
+            {% csrf_token %}
+            {{ batch_form|crispy }}
+            <button class="btn btn-primary" type="submit" name="save_batch">{% translate "Create" %}</button>
+          </form>
+        </div>
+      </div>
+    </div>
   </div>
 
 {% endblock content %}
-
-{% block inline_javascript %}
-  <script>
-    window.addEventListener('DOMContentLoaded', () => {
-      $('#upload_submit_btn').prop('disabled', true);
-      $('#upload_submit_btn').hide();
-
-      $('#batch-list > div.card > div.card-header').click(function () {
-        const context = $(this);
-        const id = context.attr('id');
-        $('#batch-list > div.card > div.card-header').removeClass('bg-info')
-        context.addClass('bg-info');
-        $('#id_batch').val(id).change();
-      });
-      function upload_success(data) {
-        $('#id_upload_request').val(data.id)
-        $('#upload_submit_btn').prop('disabled', false);
-        $('#upload_btn').hide();
-        $('#upload_submit_btn').show();
-      }
-      function upload_error(data) {
-        alert('Unable to upload your file. Please refresh this page and contact your administrator.')
-      }
-      function upload_progress(data, sent, total) {
-      }
-      (function ($) {
-        $('#upload_btn').on('click', (event) => {
-          $('#upload_btn').prop('disabled', true);
-          $.ajaxSetup({
-            async: false
-          });
-          event.preventDefault();
-          var uploader = new FileUpload(document.querySelector('#fileupload'),
-            upload_success, upload_progress, upload_error
-          )
-          $('#fileupload').hide()
-          uploader.upload();
-        });
-      })(jQuery);
-    });
-  </script>
-{% endblock inline_javascript %}

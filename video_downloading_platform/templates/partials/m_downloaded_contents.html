@@ -19,16 +19,16 @@
           <li>MD5: <samp>{{ content.md5 }}</samp></li>
         </ul>
       </div>
-      <div class="col">
+      <div class="col-md-5">
         <ul class="list-unstyled small text-muted mb-0">
           {% if content.exif_data %}
           <li>Modification date: {{ content.exif_data|hash_d:"File:FileModifyDate" }}</li>
           {% endif %}
           <li>Mime type: {{ content.mime_type }}</li>
-          <li>SHA256: <samp>{{ content.sha256 }}</samp></li>
+          <li></li>
         </ul>
       </div>
-      <div class="col-md-1 align-right">
+      <div class="col-md-2 align-right">
         <div>
           {% if batch_status != "ARCHIVED" %}
             <a href="{% url "get_downloaded_content" content.id %}" target="_blank"

@@ -71,18 +71,18 @@
               {% with thumbnail=request.report.first.get_thumbnail %}
                 {% if batch_status != "ARCHIVED" %}
                   <div class="col-md-2 text-center">
-                    {% if thumbnail %}
-                      <div>
-                        <img src="{{ thumbnail }}" class="img-fluid rounded-start blurred-image" alt="...">
-                      </div>
-                    {% endif %}
-                    <div class="mt-2">
+                    <div class="mb-2">
                       {% if request.report.first.archive %}
                         <a href="{% url "get_report_archive" request.report.first.id %}" class="btn btn-secondary">
                           <i class="fa fa-download" aria-hidden="true"></i> {% trans "Download archive" %}
                         </a>
                       {% endif %}
                     </div>
+                    {% if thumbnail %}
+                      <div>
+                        <img src="{{ thumbnail }}" class="img-fluid rounded-start blurred-image" alt="...">
+                      </div>
+                    {% endif %}
                   </div>
                 {% endif %}
               {% endwith %}

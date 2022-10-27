@@ -1,0 +1,82 @@
+{% extends "base.html" %}
+{% load crispy_forms_tags %}
+{% load humanize %}
+{% load i18n %}
+{% load static %}
+
+{% block content %}
+  <div class="row justify-content-center">
+    {% include "partials/m_batch_header.html" with show_details_btn=True%}
+  </div>
+  <div class="row justify-content-center mt-4">
+    <div class="col-md-6">
+      <div class="card">
+        <div class="card-body">
+          <h4 class="card-title"><i class="fa fa-cloud-download text-primary" aria-hidden="true"></i> {% translate "Request download" %}</h4>
+          <form method="post">
+            {% csrf_token %}
+            {{ dl_request_form|crispy }}
+            <button class="btn btn-primary" type="submit" name="request_download">{% translate "Submit" %}</button>
+          </form>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-6">
+      <div class="card">
+        <div class="card-body">
+          <h4 class="card-title"><i class="fa fa-cloud-upload text-primary" aria-hidden="true"></i> {% translate "Upload content" %}</h4>
+          <input id="fileupload" class="form-control" type="file">
+          <div id="uploaded_files" class="mb-2"></div>
+          <form method="post" enctype="multipart/form-data">
+            {% csrf_token %}
+            {{ ul_request_form|crispy }}
+            <p class="text-muted">
+              {% translate "Select your file then click on Upload. Fill the rest of the form and click on Save." %}
+            </p>
+            <button class="btn btn-primary" id="upload_submit_btn" type="submit"
+                    name="request_upload">{% translate "Save" %}</button>
+            <button class="btn btn-primary" id="upload_btn">{% translate "Upload" %}</button>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+{% endblock %}
+
+{% block inline_javascript %}
+  <script>
+    window.addEventListener('DOMContentLoaded', () => {
+      $('#upload_submit_btn').prop('disabled', true);
+      $('#upload_submit_btn').hide();
+
+      function upload_success(data) {
+        $('#id_upload_request').val(data.id)
+        $('#upload_submit_btn').prop('disabled', false);
+        $('#upload_btn').hide();
+        $('#upload_submit_btn').show();
+      }
+
+      function upload_error(data) {
+        alert('Unable to upload your file. Please refresh this page and contact your administrator.')
+      }
+
+      function upload_progress(data, sent, total) {
+      }
+
+      (function ($) {
+        $('#upload_btn').on('click', (event) => {
+          $('#upload_btn').prop('disabled', true);
+          $.ajaxSetup({
+            async: false
+          });
+          event.preventDefault();
+          var uploader = new FileUpload(document.querySelector('#fileupload'),
+            upload_success, upload_progress, upload_error
+          )
+          $('#fileupload').hide()
+          uploader.upload();
+        });
+      })(jQuery);
+    });
+  </script>
+{% endblock inline_javascript %}

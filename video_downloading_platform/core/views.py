@@ -27,10 +27,9 @@ from video_downloading_platform.core.tasks import compute_downloaded_content_met
 from video_downloading_platform.users.admin import User
 
 
-def handle_file_upload(request, upload_form):
+def handle_file_upload(request, upload_form, batch):
     upload_request = upload_form.cleaned_data.get('upload_request')
     user = request.user
-    batch = upload_form.cleaned_data.get('batch')
     download_request = DownloadRequest(
         batch=batch,
         status=DownloadRequest.Status.PROCESSING,
@@ -111,14 +110,7 @@ def _start_pending_requests(requests):
 @login_required
 def home_view(request):
     user = request.user
-
-    dl_request_form = BatchRequestForm()
-    dl_request_form.set_user(user)
-
     batch_form = BatchForm()
-
-    ul_request_form = UploadForm()
-    ul_request_form.set_user(user)
 
     if request.method == 'POST':
         if 'save_batch' in request.POST:
@@ -137,19 +129,35 @@ def home_view(request):
                 return redirect(request.META.get('HTTP_REFERER'))
             else:
                 batch_form = f
-        elif 'close_batch' in request.POST:
-            batch_id = request.POST.dict().get('batch_id')
-            if batch_id:
-                batch = Batch.objects.get(id=batch_id)
-                batch.close()
-                messages.success(request, _(f'Your batch {batch.name} have been closed.'))
-                return redirect(request.META.get('HTTP_REFERER'))
-        elif 'request_download' in request.POST:
+
+    users_batches = Batch.get_users_open_batches(user)
+    if users_batches:
+        users_batches = users_batches.all()
+
+    return render(
+        request,
+        'pages/home.html',
+        {
+            'batch_form': batch_form,
+            'users_batches': users_batches,
+        })
+
+
+@login_required
+def add_content_to_batch_view(request, batch_id):
+    user = request.user
+    dl_request_form = BatchRequestForm()
+    dl_request_form.set_user(user)
+    ul_request_form = UploadForm()
+    batch = get_object_or_404(Batch, id=batch_id)
+    dl_request_form.set_batch(batch)
+
+    if request.method == 'POST':
+        if 'request_download' in request.POST:
             f = BatchRequestForm(request.POST)
             f.set_user(user)
             if f.is_valid():
                 request_type = f.cleaned_data.get('type')
-                batch = f.cleaned_data.get('batch')
                 urls = f.cleaned_data.get('urls').splitlines()
                 batch.updated_at = timezone.now()
                 batch.save()
@@ -175,27 +183,18 @@ def home_view(request):
                 dl_request_form = f
         elif 'request_upload' in request.POST:
             f = UploadForm(request.POST, request.FILES)
-            f.set_user(user)
             if f.is_valid():
-                handle_file_upload(request, f)
+                handle_file_upload(request, f, batch)
                 return redirect(request.META.get('HTTP_REFERER'))
             else:
                 ul_request_form = f
-    else:
-        pass
-
-    users_batches = Batch.get_users_open_batches(user)
-    if users_batches:
-        users_batches = users_batches.all()
-
     return render(
         request,
-        'pages/home.html',
+        'pages/batch_add_content.html',
         {
+            'batch': batch,
             'dl_request_form': dl_request_form,
             'ul_request_form': ul_request_form,
-            'batch_form': batch_form,
-            'users_batches': users_batches,
         })
 
 
