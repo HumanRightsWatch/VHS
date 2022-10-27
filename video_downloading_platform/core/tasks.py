@@ -167,6 +167,7 @@ def run_download_video_request(download_request_id):
                 'writeinfojson': True,
                 'writeannotations': True,
                 'writethumbnail': True,
+                'noplaylist': False,
             }
             with youtube_dl.YoutubeDL(options) as ydl:
                 print('downloading video', download_request.url)
