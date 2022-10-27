@@ -44,7 +44,7 @@ RUN apt-get update && apt-get install --no-install-recommends -y \
   # cleaning up unused files
   && apt-get purge -y --auto-remove -o APT::AutoRemove::RecommendsImportant=false \
   # exiftool
-  && apt-get install libimage-exiftool-perl -y \
+  && apt-get install libimage-exiftool-perl libmagic1 -y \
   && rm -rf /var/lib/apt/lists/*
 
 # All absolute dir copies ignore workdir instruction. All relative dir copies are wrt to the workdir instruction

@@ -492,12 +492,16 @@ class DownloadedContent(models.Model):
     )
     sha256 = models.CharField(
         max_length=64,
+        blank=True,
+        null=True
     )
     target_file = models.BooleanField(
         default=False
     )
     mime_type = models.CharField(
         max_length=64,
+        blank=True,
+        null=True
     )
     name = models.CharField(
         max_length=512,

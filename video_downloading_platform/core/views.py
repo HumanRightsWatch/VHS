@@ -25,7 +25,8 @@ from video_downloading_platform.core.forms import BatchForm, BatchRequestForm, U
     DownloadRequestLightForm
 from video_downloading_platform.core.models import Batch, DownloadRequest, DownloadedContent, DownloadReport, \
     _get_request_types_to_run, BatchTeam
-from video_downloading_platform.core.tasks import hash_file, create_zip_archive, _get_exif_data_for_file, get_mimetype
+from video_downloading_platform.core.tasks import hash_file, create_zip_archive, _get_exif_data_for_file, get_mimetype, \
+    compute_downloaded_content_metadata
 from video_downloading_platform.users.admin import User
 
 
@@ -47,28 +48,29 @@ def handle_file_upload(request, upload_form):
     )
     download_report.save()
     try:
-        sha256, md5 = hash_file(upload_request.path)
-        mime_type = get_mimetype(upload_request.path)
-        if not mime_type:
-            mime_type = 'application/octet-stream'
-        exif_data = _get_exif_data_for_file(upload_request.path)
+        # sha256, md5 = hash_file(upload_request.path)
+        # mime_type = get_mimetype(upload_request.path)
+        # if not mime_type:
+        #     mime_type = 'application/octet-stream'
+        # exif_data = _get_exif_data_for_file(upload_request.path)
         metadata = {
             'original_name': upload_request.name,
             'preferred_name': upload_request.name,
-            'sha256': sha256,
-            'md5': md5,
-            'mime_type': mime_type,
+            'sha256': '',
+            'sha1': '',
+            'md5': '',
+            'mime_type': '',
             'description': upload_form.cleaned_data['description'],
         }
         downloaded_content = DownloadedContent(
             download_report=download_report,
             owner=user,
-            md5=md5,
-            sha256=sha256,
+            # md5=md5,
+            # sha256=sha256,
             name=upload_request.name,
             metadata=metadata,
-            exif_data=exif_data,
-            mime_type=mime_type,
+            # exif_data=exif_data,
+            # mime_type=mime_type,
             target_file=True,
             description=upload_form.cleaned_data['description']
         )
@@ -89,7 +91,7 @@ def handle_file_upload(request, upload_form):
                     description='Your files have been successfully uploaded',
                     public=False,
                     actions=actions)
-        transaction.on_commit(lambda: async_task(create_zip_archive, download_report.id))
+        transaction.on_commit(lambda: async_task(compute_downloaded_content_metadata, downloaded_content.id, True))
     except Exception as e:
         print(e)
         download_report.in_error = True

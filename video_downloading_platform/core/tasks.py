@@ -1,11 +1,14 @@
 import glob
-import hashlib
 import json
 import mimetypes
 import tempfile
 import traceback
 import zipfile
 from os import path
+import logging
+import hashlib
+import magic
+from tempfile import NamedTemporaryFile
 
 import exiftool
 import yt_dlp as youtube_dl
@@ -19,6 +22,7 @@ from video_downloading_platform.core.models import (
     DownloadedContent,
 )
 
+logger = logging.getLogger(__name__)
 
 def hash_file(filename):
     if path.isfile(filename) is False:
@@ -70,6 +74,40 @@ def _get_exif_data_for_file(file_path):
     except Exception:
         pass
     return {}
+
+def compute_downloaded_content_metadata(downloaded_content_id, create_archive=False):
+    logger.info(f'Compute downloaded content metadata {downloaded_content_id}')
+    h_sha256 = hashlib.sha256()
+    h_sha1 = hashlib.sha1()
+    h_md5 = hashlib.md5()
+    try:
+        downloaded_content: DownloadedContent = DownloadedContent.objects.get(id=downloaded_content_id)
+    except Exception as e:
+        logger.error(e)
+        return
+
+    with NamedTemporaryFile() as tmp:
+        for chunk in downloaded_content.content.chunks():
+            tmp.write(chunk)
+            h_sha256.update(chunk)
+            h_sha1.update(chunk)
+            h_md5.update(chunk)
+        tmp.seek(0)
+        mime_type = magic.from_buffer(tmp.read(2048), mime=True)
+        with exiftool.ExifToolHelper() as et:
+            exif = et.get_metadata(tmp.name)[0]
+
+    downloaded_content.md5 = h_md5.hexdigest()
+    downloaded_content.sha256 = h_sha256.hexdigest()
+    downloaded_content.mime_type = mime_type
+    downloaded_content.exif_data = exif
+    downloaded_content.metadata['md5'] = h_md5.hexdigest()
+    downloaded_content.metadata['sha1'] = h_sha1.hexdigest()
+    downloaded_content.metadata['sha256'] = h_sha256.hexdigest()
+    downloaded_content.metadata['mime_type'] = mime_type
+    downloaded_content.save()
+    if create_archive:
+        create_zip_archive(downloaded_content.download_report.id)
 
 
 def _manage_downloaded_files(directory, owner, download_report, cw, request_type=None):
@@ -243,6 +281,7 @@ def run_download_gallery_request(download_request_id):
 
 
 def create_zip_archive(report_id):
+    logger.info(f'Create archive for download report {report_id}')
     download_report = DownloadReport.objects.get(id=report_id)
     try:
         with tempfile.TemporaryDirectory() as tmp_dir:
@@ -280,4 +319,4 @@ def create_zip_archive(report_id):
             with open(f'{tmp_dir}/archive.zip', mode='rb') as tmp:
                 download_report.archive.save('archive.zip', tmp)
     except Exception as e:
-        print(e)
+        logger.error(e)
