@@ -73,7 +73,7 @@ class FileUpload {
         this.success_callback = success_callback;
         this.progress_callback = progress_callback;
         this.error_callback = error_callback;
-        this.max_length = 10000000; //2 * 1024 * 1024;
+        this.max_length = 1 * 1024 * 1024;
         this.next_addr = 0;
         this.slices = {};
     }
