@@ -39,10 +39,16 @@
         </div>
         <div class="tab-pane fade{% if ul_request_form.errors %}show active{% endif %}" id="upload-tab-form"
              role="tabpanel" aria-labelledby="upload-tab">
+          <input id="fileupload" class="form-control" type="file">
+          <div id="uploaded_files" class="mb-2"></div>
           <form method="post" enctype="multipart/form-data">
             {% csrf_token %}
             {{ ul_request_form|crispy }}
-            <button class="btn btn-primary" type="submit" name="request_upload">{% translate "Submit" %}</button>
+            <p class="text-muted">
+              {% translate "Select your file then click on Upload. Fill the rest of the form and click on Save." %}
+            </p>
+            <button class="btn btn-primary" id="upload_submit_btn" type="submit" name="request_upload">{% translate "Save" %}</button>
+            <button class="btn btn-primary" id="upload_btn">{% translate "Upload" %}</button>
           </form>
         </div>
       </div>
@@ -125,7 +131,8 @@
                   <a href="{% url 'download_batch_archive' batch.id %}" class="btn btn-sm btn-primary" role="button">
                     <i class="fa fa-download" aria-hidden="true"></i> {% translate "Download" %}
                   </a>
-                  <a href="#" class="btn btn-sm btn-primary" role="button" onclick="show_modal_form('{% url 'batch_edit' batch.id %}')">
+                  <a href="#" class="btn btn-sm btn-primary" role="button"
+                     onclick="show_modal_form('{% url 'batch_edit' batch.id %}')">
                     <i class="fa fa-pencil" aria-hidden="true"></i> {% translate "Edit" %}
                   </a>
                 {% endif %}
@@ -145,13 +152,41 @@
 {% block inline_javascript %}
   <script>
     window.addEventListener('DOMContentLoaded', () => {
-      const batch_list = $('#batch-list > div.card > div.card-header').click(function () {
+      $('#upload_submit_btn').prop('disabled', true);
+      $('#upload_submit_btn').hide();
+
+      $('#batch-list > div.card > div.card-header').click(function () {
         const context = $(this);
         const id = context.attr('id');
         $('#batch-list > div.card > div.card-header').removeClass('bg-info')
         context.addClass('bg-info');
         $('#id_batch').val(id).change();
       });
+      function upload_success(data) {
+        $('#id_upload_request').val(data.id)
+        $('#upload_submit_btn').prop('disabled', false);
+        $('#upload_btn').hide();
+        $('#upload_submit_btn').show();
+      }
+      function upload_error(data) {
+        alert('Unable to upload your file. Please refresh this page and contact your administrator.')
+      }
+      function upload_progress(data, sent, total) {
+      }
+      (function ($) {
+        $('#upload_btn').on('click', (event) => {
+          $('#upload_btn').prop('disabled', true);
+          $.ajaxSetup({
+            async: false
+          });
+          event.preventDefault();
+          var uploader = new FileUpload(document.querySelector('#fileupload'),
+            upload_success, upload_progress, upload_error
+          )
+          $('#fileupload').hide()
+          uploader.upload();
+        });
+      })(jQuery);
     });
   </script>
 {% endblock inline_javascript %}

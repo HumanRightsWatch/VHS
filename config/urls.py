@@ -10,6 +10,7 @@ from django.views.i18n import JavaScriptCatalog
 from notifications.views import UnreadNotificationsList
 from rest_framework.authtoken.views import obtain_auth_token
 
+from video_downloading_platform.core.upload_views import initialize_upload, append_to_upload
 from video_downloading_platform.core.views import (
     home_view,
     close_batch_view,
@@ -56,6 +57,10 @@ urlpatterns = [
                   path("content/<str:content_id>/download", get_downloaded_content_view, name="get_downloaded_content"),
                   path("report/<str:report_id>/download", get_report_archive_view, name="get_report_archive"),
                   path("stats", statistics_view, name="statistics"),
+
+                  path("upload", initialize_upload, name="initialize_upload"),
+                  path("upload/<str:upload_id>", append_to_upload, name="append_to_upload"),
+
               ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
 
 

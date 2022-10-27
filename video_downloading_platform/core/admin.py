@@ -4,7 +4,7 @@ from video_downloading_platform.core.models import (
     Batch,
     DownloadRequest,
     DownloadReport,
-    DownloadedContent
+    DownloadedContent, UploadRequest
 )
 
 
@@ -34,3 +34,10 @@ class DownloadedContentAdmin(admin.ModelAdmin):
 
 
 admin.site.register(DownloadedContent, DownloadedContentAdmin)
+
+
+class UploadRequestAdmin(admin.ModelAdmin):
+    list_display = ('name', 'path')
+
+
+admin.site.register(UploadRequest, UploadRequestAdmin)

@@ -8,6 +8,7 @@ from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.core.files import File
+from django.core.files.base import ContentFile
 from django.db import transaction
 from django.forms import model_to_dict
 from django.http import HttpResponse, JsonResponse
@@ -16,6 +17,7 @@ from django.urls import reverse_lazy
 from django.utils.translation import gettext as _
 from django.views.generic import UpdateView
 from django.utils import timezone
+from django_q.tasks import async_task
 from notifications.signals import notify
 from notifications.utils import id2slug
 
@@ -28,8 +30,7 @@ from video_downloading_platform.users.admin import User
 
 
 def handle_file_upload(request, upload_form):
-    filename = str(request.FILES['file'])
-    original_basename = os.path.basename(filename)
+    upload_request = upload_form.cleaned_data.get('upload_request')
     user = request.user
     batch = upload_form.cleaned_data.get('batch')
     download_request = DownloadRequest(
@@ -45,44 +46,39 @@ def handle_file_upload(request, upload_form):
         owner=user
     )
     download_report.save()
-    file = request.FILES['file']
     try:
-        with NamedTemporaryFile(suffix=original_basename) as tmp:
-            for chunk in file.chunks():
-                tmp.write(chunk)
-            tmp.seek(0)
-            sha256, md5 = hash_file(tmp.name)
-            mime_type = get_mimetype(tmp.name)
-            if not mime_type:
-                mime_type = 'application/octet-stream'
-            exif_data = _get_exif_data_for_file(tmp.name)
-            metadata = {
-                'original_name': filename,
-                'preferred_name': upload_form.cleaned_data['name'],
-                'sha256': sha256,
-                'md5': md5,
-                'mime_type': mime_type,
-                'description': upload_form.cleaned_data['description'],
-            }
-            downloaded_content = DownloadedContent(
-                download_report=download_report,
-                owner=user,
-                md5=md5,
-                sha256=sha256,
-                name=filename,
-                metadata=metadata,
-                exif_data=exif_data,
-                mime_type=mime_type,
-                target_file=True,
-                description=upload_form.cleaned_data['description']
-            )
-            downloaded_content.save()
-            content_file = File(tmp)
-            downloaded_content.content.save(filename, content_file)
+        sha256, md5 = hash_file(upload_request.path)
+        mime_type = get_mimetype(upload_request.path)
+        if not mime_type:
+            mime_type = 'application/octet-stream'
+        exif_data = _get_exif_data_for_file(upload_request.path)
+        metadata = {
+            'original_name': upload_request.name,
+            'preferred_name': upload_request.name,
+            'sha256': sha256,
+            'md5': md5,
+            'mime_type': mime_type,
+            'description': upload_form.cleaned_data['description'],
+        }
+        downloaded_content = DownloadedContent(
+            download_report=download_report,
+            owner=user,
+            md5=md5,
+            sha256=sha256,
+            name=upload_request.name,
+            metadata=metadata,
+            exif_data=exif_data,
+            mime_type=mime_type,
+            target_file=True,
+            description=upload_form.cleaned_data['description']
+        )
+        downloaded_content.save()
+        with open(upload_request.path, mode='rb') as f:
+            downloaded_content.content.save(upload_request.name, File(f))
             downloaded_content.save()
         download_request.status = DownloadRequest.Status.SUCCEEDED
         download_request.save()
-        create_zip_archive(download_report.id)
+        upload_request.cleanup()
         actions = [
             {
                 'url': reverse_lazy('batch_details', args=[download_request.batch.id]) + '#' + str(
@@ -93,6 +89,7 @@ def handle_file_upload(request, upload_form):
                     description='Your files have been successfully uploaded',
                     public=False,
                     actions=actions)
+        transaction.on_commit(lambda: async_task(create_zip_archive, download_report.id))
     except Exception as e:
         print(e)
         download_report.in_error = True
@@ -146,14 +143,6 @@ def home_view(request):
                 batch.team = team
                 batch.save()
                 f.save_m2m()
-                # batch = Batch(
-                #     name=f.cleaned_data.get('name'),
-                #     description=f.cleaned_data.get('description'),
-                #     tags=f.cleaned_data.get('tags'),
-                #     owner=user,
-                #     team=team
-                # )
-                # batch.save()
                 messages.success(request, _(f'Your batch {batch.name} have been created.'))
                 return redirect(request.META.get('HTTP_REFERER'))
             else:
@@ -528,6 +517,12 @@ def __get_failures_per_domain():
             ORDER BY failure desc
             LIMIT 25""")
         return dictfetchall(cursor)
+
+@login_required
+def file_upload_view(request):
+    pass
+
+
 
 
 @login_required

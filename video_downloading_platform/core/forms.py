@@ -3,7 +3,7 @@ from django.contrib.admin.widgets import FilteredSelectMultiple
 from django.core.exceptions import ValidationError
 from django.utils.translation import gettext_lazy as _
 
-from video_downloading_platform.core.models import Batch, BatchRequest, BatchTeam, DownloadRequest
+from video_downloading_platform.core.models import Batch, BatchRequest, BatchTeam, DownloadRequest, UploadRequest
 
 
 class BatchTeamForm(forms.ModelForm):
@@ -87,8 +87,16 @@ def validate_batch(batch_id):
 
 
 class UploadForm(forms.Form):
-    batch = forms.ChoiceField(label=_('Collection'))
-    name = forms.CharField(label=_('Filename'), max_length=100)
+    batch = forms.ChoiceField(
+        label=_('Collection'),
+        required=True
+    )
+    upload_request = forms.CharField(
+        label=_(''),
+        max_length=64,
+        required=True,
+        widget=forms.HiddenInput()
+    )
     description = forms.CharField(
         label=_('Description'),
         max_length=2000,
@@ -99,13 +107,19 @@ class UploadForm(forms.Form):
         max_length=200,
         required=False,
         widget=forms.Textarea(attrs={'rows': 2, 'cols': 20}))
-    file = forms.FileField()
+    # file = forms.FileField()
 
     def clean_batch(self):
         batch_id = self.cleaned_data["batch"]
         if not Batch.objects.filter(id=batch_id).exists():
             raise ValidationError("Selected collection does not exists")
         return Batch.objects.get(id=batch_id)
+
+    def clean_upload_request(self):
+        request_id = self.cleaned_data["upload_request"]
+        if not UploadRequest.objects.filter(id=request_id).exists():
+            raise ValidationError("Selected upload request does not exists")
+        return UploadRequest.objects.get(id=request_id)
 
     def set_user(self, connected_user):
         if connected_user:

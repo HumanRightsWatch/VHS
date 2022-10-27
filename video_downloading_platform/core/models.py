@@ -1,5 +1,7 @@
 import tempfile
 import uuid
+import os
+from datetime import timedelta
 
 import yt_dlp as youtube_dl
 from django.conf import settings
@@ -8,9 +10,11 @@ from django.db import models
 from django.db.models.signals import pre_delete
 from django.dispatch import receiver
 from django.urls import reverse_lazy, reverse
+from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
 from django_q.humanhash import HumanHasher
-from django_q.tasks import async_task
+from django_q.models import Schedule
+from django_q.tasks import async_task, schedule
 from gallery_dl.extractor import find as gdl_find_extractors
 from taggit.managers import TaggableManager
 from taggit.models import GenericUUIDTaggedItemBase, TaggedItemBase
@@ -543,6 +547,68 @@ class DownloadedContent(models.Model):
         return None
 
 
+class UploadRequest(models.Model):
+    class Status(models.TextChoices):
+        CREATED = 'CREATED', _('Created')
+        PROCESSING = 'PROCESSING', _('Processing')
+        SUCCEEDED = 'SUCCEEDED', _('Succeeded')
+        FAILED = 'FAILED', _('Failed')
+
+    id = models.UUIDField(
+        primary_key=True,
+        default=uuid.uuid4,
+        editable=False
+    )
+    eof = models.BooleanField(default=False)
+    owner = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        editable=False
+    )
+    name = models.CharField(
+        max_length=512,
+        blank=True,
+        null=True
+    )
+    size = models.IntegerField(
+        default=0
+    )
+    next_addr = models.IntegerField(
+        default=0
+    )
+    status = models.CharField(
+        max_length=16,
+        choices=Status.choices,
+        default=Status.CREATED,
+    )
+    chunks = models.JSONField(blank=True, null=True)
+
+    @property
+    def path(self):
+        import pathlib
+        extension = pathlib.Path(self.name).suffix
+        return f'/tmp/upload.{self.id}.{extension}'
+
+    def cleanup(self):
+        if os.path.exists(self.path):
+            os.remove(self.path)
+
+    def schedule_cleanup(self):
+        schedule(
+            'video_downloading_platform.core.models.cleanup_upload_request',
+            str(self.id),
+            schedule_type=Schedule.ONCE,
+            next_run=timezone.now() + timedelta(days=2)
+        )
+
+def cleanup_upload_request(request_id):
+    try:
+        upload_request = UploadRequest.objects.get(id=request_id)
+        upload_request.cleanup()
+    except Exception as e:
+        print(e)
+
+
 @receiver(pre_delete, sender=DownloadedContent, dispatch_uid='delete_stored_file')
 def delete_downloaded_content_stored_files(sender, instance: DownloadedContent, using, **kwargs):
     instance.content.delete()
@@ -551,3 +617,8 @@ def delete_downloaded_content_stored_files(sender, instance: DownloadedContent, 
 @receiver(pre_delete, sender=DownloadReport, dispatch_uid='delete_stored_archive_file')
 def delete_download_report_stored_files(sender, instance: DownloadReport, using, **kwargs):
     instance.archive.delete()
+
+
+@receiver(pre_delete, sender=UploadRequest, dispatch_uid='delete_upload_request_file')
+def delete_upload_request_stored_files(sender, instance: UploadRequest, using, **kwargs):
+    instance.cleanup()
