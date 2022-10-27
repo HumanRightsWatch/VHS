@@ -38,17 +38,17 @@ def hash_file(filename):
     return h_sha256.hexdigest(), h_md5.hexdigest()
 
 
-def get_mimetype(filename):
-    mime_type = mimetypes.MimeTypes().guess_type(filename)[0]
-    if not mime_type:
-        mime_type = 'application/octet-stream'
-    if filename.endswith('.webp'):
-        mime_type = 'image/webp'
-    if filename.endswith('.jpeg'):
-        mime_type = 'image/jpeg'
-    if filename.endswith('.png'):
-        mime_type = 'image/png'
-    return mime_type
+# def get_mimetype(filename):
+#     mime_type = mimetypes.MimeTypes().guess_type(filename)[0]
+#     if not mime_type:
+#         mime_type = 'application/octet-stream'
+#     if filename.endswith('.webp'):
+#         mime_type = 'image/webp'
+#     if filename.endswith('.jpeg'):
+#         mime_type = 'image/jpeg'
+#     if filename.endswith('.png'):
+#         mime_type = 'image/png'
+#     return mime_type
 
 
 def _get_file_metadata(directory, filename):
@@ -61,8 +61,8 @@ def _get_file_metadata(directory, filename):
             with open(f, mode='r') as json_file:
                 metadata = json.load(json_file)
                 return metadata
-        except Exception:
-            pass
+        except Exception as e:
+            logger.error(e)
     return {}
 
 
@@ -71,8 +71,8 @@ def _get_exif_data_for_file(file_path):
         with exiftool.ExifToolHelper() as et:
             metadata = et.get_metadata(file_path)[0]
             return metadata
-    except Exception:
-        pass
+    except Exception as e:
+        logger.error(e)
     return {}
 
 def compute_downloaded_content_metadata(downloaded_content_id, create_archive=False):
@@ -116,7 +116,7 @@ def _manage_downloaded_files(directory, owner, download_report, cw, request_type
         cleaned_name = downloaded_file.replace(directory, '')
         if cleaned_name.startswith('/'):
             cleaned_name = cleaned_name[1:]
-        mime_type = get_mimetype(downloaded_file)
+        mime_type = magic.from_file(downloaded_file, mime=True)
         mime_prefix = ''
         if request_type == DownloadRequest.VIDEO:
             mime_prefix = 'video'
@@ -189,7 +189,7 @@ def run_download_video_request(download_request_id):
                         public=False,
                         actions=actions)
     except Exception as e:
-        print(e)
+        logger.error(e)
         download_report.in_error = True
         error_message = download_report.error_message
         if not error_message:
@@ -258,7 +258,7 @@ def run_download_gallery_request(download_request_id):
                         public=False,
                         actions=actions)
     except Exception as e:
-        print(e)
+        logger.error(e)
         download_report.in_error = True
         error_message = download_report.error_message
         if not error_message:

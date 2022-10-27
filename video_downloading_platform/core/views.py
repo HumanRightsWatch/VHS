@@ -1,22 +1,20 @@
-import os.path
 import traceback
 import zipfile
 from io import BytesIO
-from tempfile import NamedTemporaryFile
+
 from django.conf import settings
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.core.files import File
-from django.core.files.base import ContentFile
 from django.db import transaction
 from django.forms import model_to_dict
 from django.http import HttpResponse, JsonResponse
 from django.shortcuts import render, redirect, get_object_or_404
 from django.urls import reverse_lazy
+from django.utils import timezone
 from django.utils.translation import gettext as _
 from django.views.generic import UpdateView
-from django.utils import timezone
 from django_q.tasks import async_task
 from notifications.signals import notify
 from notifications.utils import id2slug
@@ -25,8 +23,7 @@ from video_downloading_platform.core.forms import BatchForm, BatchRequestForm, U
     DownloadRequestLightForm
 from video_downloading_platform.core.models import Batch, DownloadRequest, DownloadedContent, DownloadReport, \
     _get_request_types_to_run, BatchTeam
-from video_downloading_platform.core.tasks import hash_file, create_zip_archive, _get_exif_data_for_file, get_mimetype, \
-    compute_downloaded_content_metadata
+from video_downloading_platform.core.tasks import compute_downloaded_content_metadata
 from video_downloading_platform.users.admin import User
 
 
@@ -48,11 +45,6 @@ def handle_file_upload(request, upload_form):
     )
     download_report.save()
     try:
-        # sha256, md5 = hash_file(upload_request.path)
-        # mime_type = get_mimetype(upload_request.path)
-        # if not mime_type:
-        #     mime_type = 'application/octet-stream'
-        # exif_data = _get_exif_data_for_file(upload_request.path)
         metadata = {
             'original_name': upload_request.name,
             'preferred_name': upload_request.name,
@@ -65,12 +57,8 @@ def handle_file_upload(request, upload_form):
         downloaded_content = DownloadedContent(
             download_report=download_report,
             owner=user,
-            # md5=md5,
-            # sha256=sha256,
             name=upload_request.name,
             metadata=metadata,
-            # exif_data=exif_data,
-            # mime_type=mime_type,
             target_file=True,
             description=upload_form.cleaned_data['description']
         )
@@ -520,11 +508,10 @@ def __get_failures_per_domain():
             LIMIT 25""")
         return dictfetchall(cursor)
 
+
 @login_required
 def file_upload_view(request):
     pass
-
-
 
 
 @login_required
