@@ -121,21 +121,19 @@
             </div>
             <div class="card-footer">
               <div class="btn-group" role="group">
-                {% if user == batch.owner %}
-                  <a href="{% url 'edit_batch_team' batch.team.id %}" class="btn btn-sm btn-primary" role="button">
-                    <i class="fa fa-share-alt" aria-hidden="true"></i> {% translate "Share" %}
-                  </a>
-                  <a href="{% url 'close_batch' batch.id %}" class="btn btn-sm btn-primary" role="button">
-                    <i class="fa fa-times" aria-hidden="true"></i> {% translate "Close" %}
-                  </a>
-                  <a href="{% url 'download_batch_archive' batch.id %}" class="btn btn-sm btn-primary" role="button">
-                    <i class="fa fa-download" aria-hidden="true"></i> {% translate "Download" %}
-                  </a>
-                  <a href="#" class="btn btn-sm btn-primary" role="button"
-                     onclick="show_modal_form('{% url 'batch_edit' batch.id %}')">
-                    <i class="fa fa-pencil" aria-hidden="true"></i> {% translate "Edit" %}
-                  </a>
-                {% endif %}
+                <a href="{% url 'edit_batch_team' batch.team.id %}" class="btn btn-sm btn-primary" role="button">
+                  <i class="fa fa-share-alt" aria-hidden="true"></i> {% translate "Share" %}
+                </a>
+                <a href="{% url 'close_batch' batch.id %}" class="btn btn-sm btn-primary" role="button">
+                  <i class="fa fa-times" aria-hidden="true"></i> {% translate "Close" %}
+                </a>
+                <a href="{% url 'download_batch_archive' batch.id %}" class="btn btn-sm btn-primary" role="button">
+                  <i class="fa fa-download" aria-hidden="true"></i> {% translate "Download" %}
+                </a>
+                <a href="#" class="btn btn-sm btn-primary" role="button"
+                   onclick="show_modal_form('{% url 'batch_edit' batch.id %}')">
+                  <i class="fa fa-pencil" aria-hidden="true"></i> {% translate "Edit" %}
+                </a>
                 <a href="{% url 'batch_details' batch.id %}" class="btn btn-sm btn-primary" role="button">
                   <i class="fa fa-search" aria-hidden="true"></i> {% translate "Details" %}
                 </a>
