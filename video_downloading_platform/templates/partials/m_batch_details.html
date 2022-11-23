@@ -15,14 +15,10 @@
         </div>
       {% else %}
         <div class="card" id="{{ request.id }}">
-          {% if in_error %}
-            <div class="card-header bg-danger bg-opacity-25">
-          {% else %}
-            <div class="card-header bg-success bg-opacity-25">
-          {% endif %}
-          <a href="{% url "hide_download_request" request.id %}" class="btn btn-sm btn-warning">
-            <i class="fa fa-trash" aria-hidden="true"></i> {% trans "Delete" %}
-          </a>
+          <div class="card-header {% if in_error %}bg-danger{% else %}bg-success{% endif %} bg-opacity-25">
+            <a href="{% url "hide_download_request" request.id %}" class="btn btn-sm btn-warning">
+              <i class="fa fa-trash" aria-hidden="true"></i> {% trans "Delete" %}
+            </a>
             {% if request.type == "VIDEO" %}
               <i class="fa fa-video"></i>
             {% elif request.type == "GALLERY" %}
@@ -92,7 +88,7 @@
             <div class="row">
               <div class="col text-md-end">
                 <span><i class="fa fa-clock-o text-primary"
-                       aria-hidden="true"></i> {{ request.updated_at|naturaltime }}</span>
+                         aria-hidden="true"></i> {{ request.updated_at|naturaltime }}</span>
                 <span><i class="fa fa-user text-primary" aria-hidden="true"></i> {{ request.owner }}</span>
                 <span>|</span>
                 {% if request.status == 'SUCCEEDED' %}

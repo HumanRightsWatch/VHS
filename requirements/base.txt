@@ -32,7 +32,12 @@ PyExifTool
 psutil
 pygal
 cairosvg
+pillow
 python-magic
+
+# Indexing
+elasticsearch-dsl>=7.0.0,<8.0.0
+python-dateutil
 
 django-taggit==2.1.0
 django-markdownify==0.9.0

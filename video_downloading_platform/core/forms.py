@@ -1,4 +1,5 @@
 from django import forms
+from django.conf import settings
 from django.contrib.admin.widgets import FilteredSelectMultiple
 from django.core.exceptions import ValidationError
 from django.utils.translation import gettext_lazy as _
@@ -110,3 +111,59 @@ class UploadForm(forms.Form):
         if not UploadRequest.objects.filter(id=request_id).exists():
             raise ValidationError("Selected upload request does not exists")
         return UploadRequest.objects.get(id=request_id)
+
+
+def transform_results(results):
+    return [doc['_source'] for doc in results['hits']['hits']]
+
+
+def transform_hl_results(results):
+    ret = []
+    for doc in results['hits']['hits']:
+        d = {}
+        for k, v in doc.items():
+            if k.startswith('_'):
+                k = k[1:]
+            d[k] = v
+        ret.append(d)
+    return ret
+
+
+class SearchForm(forms.Form):
+    q = forms.CharField(
+        max_length=128,
+        label=_('Search among downloaded contents')
+    )
+
+    def do_search(self, indexes=['c.*']):
+        q = self.cleaned_data['q']
+
+        query = {
+            "query": {
+                "query_string": {
+                    "default_field": "sha256",
+                    "query": q
+                }
+            },
+            "highlight": {
+                "fields": {
+                    "*": {"pre_tags": ["<mark>"], "post_tags": ["</mark>"]}
+                }
+            },
+            "_source": [
+                "collection_id", "collection_name", "created_at", "mimetype", "origin", "owner", "platform",
+                "post.description", "post.title", "post.upload_date", "post.uploader", "sha256", "stats.comment_count",
+                "stats.like_count", "stats.view_count", "status", "tags", "thumbnail_content_id", "type"
+            ],
+            "sort": {"created_at": "desc"},
+            "size": 75,
+        }
+
+        from elasticsearch import Elasticsearch
+        es = Elasticsearch(settings.ELASTICSEARCH_HOSTS)
+        try:
+            raw_results = es.search(index=indexes, body=query)
+            results = transform_hl_results(raw_results)
+            return results
+        except Exception as e:
+            return []

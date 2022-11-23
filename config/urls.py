@@ -20,7 +20,8 @@ from video_downloading_platform.core.views import (
     get_downloaded_file_view, archive_batch_view, get_report_archive_view, get_batch_status_view,
     reopen_batch_view, BatchTeamUpdateView, download_collection_zip_view,
     hide_download_request_view, show_download_request_view, mark_all_notification_read_view, batch_edit_view,
-    edit_download_request_view, statistics_view, add_content_to_batch_view,
+    edit_download_request_view, statistics_view, add_content_to_batch_view, search_view, get_thumbnail_view,
+    get_downloaded_content_thumbnail,
 )
 urlpatterns = [
                   path("", home_view, name="home"),
@@ -56,8 +57,10 @@ urlpatterns = [
                   path("request/<str:request_id>/show", show_download_request_view, name="show_download_request"),
                   path("content/<str:content_id>", get_downloaded_file_view, name="get_downloaded_file"),
                   path("content/<str:content_id>/download", get_downloaded_content_view, name="get_downloaded_content"),
+                  path("content/<str:content_id>/thumbnail", get_downloaded_content_thumbnail, name="get_downloaded_content_thumbnail"),
                   path("report/<str:report_id>/download", get_report_archive_view, name="get_report_archive"),
                   path("stats", statistics_view, name="statistics"),
+                  path("search", search_view, name="search"),
 
                   path("upload", initialize_upload, name="initialize_upload"),
                   path("upload/<str:upload_id>", append_to_upload, name="append_to_upload"),

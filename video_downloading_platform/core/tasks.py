@@ -1,6 +1,6 @@
 import glob
 import json
-import mimetypes
+from urllib.parse import urlparse
 import tempfile
 import traceback
 import zipfile
@@ -9,17 +9,20 @@ import logging
 import hashlib
 import magic
 from tempfile import NamedTemporaryFile
+from dateutil.parser import parse
 
 import exiftool
 import yt_dlp as youtube_dl
 from django.core.files import File
 from django.urls import reverse_lazy
+from elasticsearch_dsl import Index
 from notifications.signals import notify
 
+from video_downloading_platform.core.indexing import Entity
 from video_downloading_platform.core.models import (
     DownloadRequest,
     DownloadReport,
-    DownloadedContent,
+    DownloadedContent, Batch,
 )
 
 logger = logging.getLogger(__name__)
@@ -75,7 +78,7 @@ def _get_exif_data_for_file(file_path):
         logger.error(e)
     return {}
 
-def compute_downloaded_content_metadata(downloaded_content_id, create_archive=False):
+def compute_downloaded_content_metadata(downloaded_content_id, download_request_id, create_archive=False):
     logger.info(f'Compute downloaded content metadata {downloaded_content_id}')
     h_sha256 = hashlib.sha256()
     h_sha1 = hashlib.sha1()
@@ -106,6 +109,7 @@ def compute_downloaded_content_metadata(downloaded_content_id, create_archive=Fa
     downloaded_content.metadata['sha256'] = h_sha256.hexdigest()
     downloaded_content.metadata['mime_type'] = mime_type
     downloaded_content.save()
+    index_download_request_by_id(download_request_id)
     if create_archive:
         create_zip_archive(downloaded_content.download_report.id)
 
@@ -178,7 +182,10 @@ def run_download_video_request(download_request_id):
 
             download_request.status = DownloadRequest.Status.SUCCEEDED
             download_request.save()
+
             create_zip_archive(download_report.id)
+            index_download_request(download_request)
+
             actions = [
                 {
                     'url': reverse_lazy('batch_details', args=[download_request.batch.id]) + '#' + str(
@@ -247,6 +254,7 @@ def run_download_gallery_request(download_request_id):
             download_request.save()
 
             create_zip_archive(download_report.id)
+            index_download_request(download_request)
 
             actions = [
                 {
@@ -321,3 +329,149 @@ def create_zip_archive(report_id):
                 download_report.archive.save('archive.zip', tmp)
     except Exception as e:
         logger.error(e)
+
+
+def __try_recovering_date(d):
+    try:
+        return parse(d)
+    except:
+        return d
+
+
+def __parse_exif(exif):
+    ignore = [
+        'ICC_Profile',
+        'Composite',
+        'Photoshop',
+        'JFIF',
+        'MakerNotes',
+        'APP14',
+    ]
+    data = {}
+
+    if not exif or type(exif) is list:
+        return data
+
+    def should_ignore(key: str):
+        if ':' in key:
+            key = key.split(':')[0]
+        return bool(key in ignore)
+
+    for k, v in exif.items():
+        if should_ignore(k):
+            continue
+        k = k.replace(':', '_')
+        if 'date' in k.lower():
+            data[k] = __try_recovering_date(v)
+        elif type(v) is set:
+            data[k] = list(v)
+        else:
+            data[k] = v
+    return data
+
+
+def get_in_dict(keys, obj, default=''):
+    for k in keys:
+        if k in obj:
+            return obj.get(k)
+    return default
+
+def index_download_request(request: DownloadRequest):
+    from elasticsearch_dsl import connections
+    connections.create_connection(hosts=['elasticsearch'], timeout=20)
+
+    index_name = request.get_es_index()
+    try:
+        index = Index(index_name)
+        if not index.exists():
+            index.create()
+    except Exception as e:
+        logger.error(e)
+
+    Entity.init(index=index_name)
+
+    if request.is_hidden:
+        return
+
+    for report in request.report.all():
+        for content in report.downloadedcontent_set.all():
+            if content.name.endswith('.json') or content.name.endswith('.description'):
+                continue
+            # if not content.target_file:
+            #     continue
+            entity = Entity()
+            entity.meta.id = str(content.id)
+            entity.created_at = request.created_at
+            entity.content_id = str(content.id)
+            entity.owner = str(request.owner.username)
+            entity.owner_id = str(request.owner.id)
+            entity.tags = [str(t) for t in request.tags.all()]
+            entity.request_id = str(request.id)
+            entity.collection_id = str(request.batch.id)
+            entity.collection_name = str(request.batch.name)
+            entity.collection_description = str(request.batch.description)
+            entity.origin = request.url
+            entity.mimetype = content.mime_type
+            entity.md5 = content.md5
+            entity.sha256 = content.sha256
+            entity.status = request.get_status_display()
+            entity.thumbnail_content_id = report.get_thumbnail_id()
+            entity.exif = '\n'.join([f'{k}: {v}' for k, v in __parse_exif(content.exif_data).items()])
+            entity.content_warning = request.content_warning
+
+            if request.type == DownloadRequest.VIDEO:
+                entity.type = DownloadRequest.VIDEO.lower()
+                entity.stats = {
+                    'view_count': content.metadata.get('view_count', -1),
+                    'like_count': content.metadata.get('like_count', -1),
+                    'comment_count': content.metadata.get('comment_count', -1),
+                }
+                entity.post = {
+                    'uploader': content.metadata.get('uploader', ''),
+                    'uploader_url': content.metadata.get('uploader_url', ''),
+                    'uploader_id': str(content.metadata.get('uploader_id', '')),
+                    'title': content.metadata.get('title', content.name),
+                    'description': content.metadata.get('fulltitle', ''),
+                    'upload_date': __try_recovering_date(content.metadata.get('upload_date', '1970-01-01')),
+                }
+                entity.webpage_url = content.metadata.get('webpage_url', '')
+                entity.platform = content.metadata.get('extractor_key', '')
+
+            elif request.type == DownloadRequest.GALLERY:
+                entity.type = DownloadRequest.GALLERY.lower()
+                entity.platform = urlparse(request.url).netloc
+                entity.stats = {
+                    'view_count': get_in_dict(['view_count'], content.metadata, -1),
+                    'like_count': get_in_dict(['like_count', 'fav_count', 'favourites_count', 'favorite_count'], content.metadata, -1),
+                    'comment_count': get_in_dict(['comment_count', 'replies_count', 'reply_count'], content.metadata, -1),
+                }
+                entity.post = {
+                    'uploader': content.metadata.get('uploader', ''),
+                    'uploader_url': content.metadata.get('uploader_url', ''),
+                    'uploader_id': str(get_in_dict(['uploader_id'], content.metadata, -1),),
+                    'title': content.metadata.get('title', content.name),
+                    'description': get_in_dict(['fulltitle', 'description', 'content', 'tag_string'], content.metadata),
+                    'upload_date': __try_recovering_date(get_in_dict(['date', 'created_at'], content.metadata, '1970-01-01')),
+                }
+
+            if request.url == 'http://dummy.url.local':
+                entity.origin = 'User upload'
+                entity.platform = 'VHS'
+
+            entity.save(index=index_name)
+
+    request.batch.indexed = True
+    request.batch.save()
+
+def index_download_request_by_id(request_id: str):
+    request: DownloadRequest = DownloadRequest.objects.get(id=request_id)
+    if not request:
+        return
+    index_download_request(request)
+
+def index_collection_by_id(batch_id: str):
+    batch: Batch = Batch.objects.get(id=batch_id)
+    if not batch:
+        return
+    for dr in batch.download_requests.all():
+        index_download_request(dr)

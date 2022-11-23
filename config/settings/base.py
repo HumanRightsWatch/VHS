@@ -333,3 +333,7 @@ Q_CLUSTER = {
     'label': 'Django Q',
     'redis': env("REDIS_URL")
 }
+
+# Elastic Search
+ELASTICSEARCH_HOST = env("ELASTICSEARCH_HOST", default="elasticsearch")
+ELASTICSEARCH_HOSTS = ["elasticsearch"]

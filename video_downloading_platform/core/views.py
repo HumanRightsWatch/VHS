@@ -14,17 +14,24 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.urls import reverse_lazy
 from django.utils import timezone
 from django.utils.translation import gettext as _
+from django.views.decorators.cache import cache_page
 from django.views.generic import UpdateView
 from django_q.tasks import async_task
 from notifications.signals import notify
 from notifications.utils import id2slug
 
 from video_downloading_platform.core.forms import BatchForm, BatchRequestForm, UploadForm, BatchTeamForm, \
-    DownloadRequestLightForm
+    DownloadRequestLightForm, SearchForm
 from video_downloading_platform.core.models import Batch, DownloadRequest, DownloadedContent, DownloadReport, \
     _get_request_types_to_run, BatchTeam
-from video_downloading_platform.core.tasks import compute_downloaded_content_metadata
+from video_downloading_platform.core.tasks import compute_downloaded_content_metadata, index_download_request_by_id, \
+    index_collection_by_id
 from video_downloading_platform.users.admin import User
+
+
+def _start_pending_async_tasks(tasks: list):
+    for task in tasks:
+        task()
 
 
 def handle_file_upload(request, upload_form, batch):
@@ -35,6 +42,7 @@ def handle_file_upload(request, upload_form, batch):
         status=DownloadRequest.Status.PROCESSING,
         url='http://dummy.url.local',
         owner=user,
+        type=DownloadRequest.UPLOAD,
         content_warning=upload_form.cleaned_data.get('content_warning')
     )
     download_request.save()
@@ -78,7 +86,7 @@ def handle_file_upload(request, upload_form, batch):
                     description='Your files have been successfully uploaded',
                     public=False,
                     actions=actions)
-        transaction.on_commit(lambda: async_task(compute_downloaded_content_metadata, downloaded_content.id, True))
+        transaction.on_commit(lambda: async_task(compute_downloaded_content_metadata, downloaded_content.id, download_request.id, True))
     except Exception as e:
         print(e)
         download_report.in_error = True
@@ -260,8 +268,6 @@ def batch_details_view(request, batch_id):
     user_groups = user.groups.values_list('name', flat=True)
     admin = 'admin' in user_groups
     batch = Batch.objects.get(id=batch_id)
-    # for r in batch.download_requests.all():
-    #     index_download_request(r.id)
     return render(
         request,
         'pages/batch_details.html',
@@ -280,12 +286,30 @@ def get_downloaded_content_view(request, content_id):
 
 
 @login_required
+@cache_page(60 * 5)
 def get_downloaded_file_view(request, content_id):
     content = DownloadedContent.objects.get(id=content_id)
     try:
         return HttpResponse(content.content, content_type=content.mime_type)
     except Exception:
         return HttpResponse('')
+
+
+@login_required
+@cache_page(60 * 5)
+def get_downloaded_content_thumbnail(request, content_id):
+    content = DownloadedContent.objects.get(id=content_id)
+    if content.mime_type.startswith('image') and content.content:
+        try:
+            return HttpResponse(content.content, content_type=content.mime_type)
+        except Exception:
+            return HttpResponse('')
+    else:
+        from PIL import Image
+        placeholder = Image.new('RGBA', (240, 240), (128, 128, 128))
+        response = HttpResponse(content_type="image/png")
+        placeholder.save(response, "PNG")
+        return response
 
 
 @login_required
@@ -426,6 +450,7 @@ def batch_edit_view(request, batch_id):
     form = BatchForm(request.POST or None, instance=batch)
     if form.is_valid():
         form.save()
+        transaction.on_commit(lambda: async_task(index_collection_by_id, batch_id))
         return redirect(request.META.get('HTTP_REFERER'))
     return render(
         request,
@@ -444,6 +469,7 @@ def edit_download_request_view(request, request_id):
     form = DownloadRequestLightForm(request.POST or None, instance=request_obj)
     if form.is_valid():
         form.save()
+        transaction.on_commit(lambda: async_task(index_download_request_by_id, request_id))
         return redirect(request.META.get('HTTP_REFERER'))
     return render(
         request,
@@ -509,9 +535,30 @@ def __get_failures_per_domain():
 
 
 @login_required
-def file_upload_view(request):
-    pass
+def search_view(request):
+    user = request.user
+    results = []
+    q = None
+    search_form = SearchForm()
+    if request.method == 'POST':
+        search_form = SearchForm(request.POST)
+        if search_form.is_valid():
+            results = search_form.do_search(indexes=Batch.get_users_batch_es_indexes(user))
+            q = search_form.cleaned_data['q']
+    return render(request, 'pages/search.html', {
+        'results': results,
+        'q': q,
+        'search_form': search_form,
+    })
 
+
+@login_required
+def get_thumbnail_view(request, request_id):
+    download_request = get_object_or_404(DownloadRequest, id=request_id)
+    report = download_request.report.first()
+    if report:
+        return report.get_thumbnail()
+    return None
 
 @login_required
 def statistics_view(request):

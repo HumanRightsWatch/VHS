@@ -3,7 +3,7 @@
     <option name="myName" value="Project Default" />
     <inspection_tool class="DuplicatedCode" enabled="true" level="WEAK WARNING" enabled_by_default="true">
       <Languages>
-        <language minSize="67" name="Python" />
+        <language minSize="98" name="Python" />
       </Languages>
     </inspection_tool>
     <inspection_tool class="Eslint" enabled="true" level="WARNING" enabled_by_default="true" />
@@ -11,7 +11,7 @@
     <inspection_tool class="PyPackageRequirementsInspection" enabled="true" level="WARNING" enabled_by_default="true">
       <option name="ignoredPackages">
         <value>
-          <list size="22">
+          <list size="23">
             <item index="0" class="java.lang.String" itemvalue="python-mimeparse" />
             <item index="1" class="java.lang.String" itemvalue="six" />
             <item index="2" class="java.lang.String" itemvalue="Werkzeug" />
@@ -34,6 +34,7 @@
             <item index="19" class="java.lang.String" itemvalue="PyExifTool" />
             <item index="20" class="java.lang.String" itemvalue="yt-dlp" />
             <item index="21" class="java.lang.String" itemvalue="psutil" />
+            <item index="22" class="java.lang.String" itemvalue="elasticsearch-dsl" />
           </list>
         </value>
       </option>

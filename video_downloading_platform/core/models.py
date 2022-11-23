@@ -2,6 +2,8 @@ import tempfile
 import uuid
 import os
 from datetime import timedelta
+import string
+import random
 
 import yt_dlp as youtube_dl
 from django.conf import settings
@@ -45,6 +47,9 @@ def _validate_urls(value):
             uv(url)
 
 
+def _random_id_16():
+    return ''.join(random.choice(string.ascii_lowercase + string.digits) for _ in range(16))
+
 class BatchTeam(models.Model):
     contributors = models.ManyToManyField(
         settings.AUTH_USER_MODEL,
@@ -66,7 +71,7 @@ class BatchTeam(models.Model):
 class Batch(models.Model):
     """
     Model representing a download batch. Users can request the download of multiple URLs under the same batch.
-    It is useful for both both experience and traceability.
+    It is useful for both experience and traceability.
     """
 
     class Meta:
@@ -121,6 +126,12 @@ class Batch(models.Model):
         editable=False
     )
     tags = TaggableManager(through=UUIDTaggedItem, blank=True)
+    es_index = models.CharField(
+        max_length=16,
+        default=_random_id_16(),
+        editable=False,
+    )
+    indexed = models.BooleanField(default=False)
     team = models.ForeignKey(
         BatchTeam,
         on_delete=models.CASCADE,
@@ -155,6 +166,9 @@ class Batch(models.Model):
         self.start()
         self.close()
 
+    def get_es_index(self):
+        return f'c.{self.es_index}'
+
     @staticmethod
     def get_users_batches(user):
         try:
@@ -172,6 +186,23 @@ class Batch(models.Model):
         except Exception as e:
             print(e)
         return None
+
+    @staticmethod
+    def get_users_batch_es_indexes(user):
+        try:
+            user_groups = user.groups.values_list('name', flat=True)
+            if 'admin' in user_groups:
+                return ['c.*']
+            else:
+                # limit to the 100 first batches to prevent exceeding ES URL max length
+                # since indexes are passed in the URL during the query
+                open_batches = Batch.get_users_open_batches(user)[:100]
+                return [
+                    b.get_es_index() for b in open_batches if b.indexed
+                ]
+        except Exception as e:
+            print(e)
+        return []
 
     @staticmethod
     def get_users_open_batches(user):
@@ -245,6 +276,7 @@ class DownloadRequest(models.Model):
     GALLERY = 'GALLERY'
     WEB_PAGE = 'WEP_PAGE'
     AUTOMATIC = 'AUTOMATIC'
+    UPLOAD = 'UPLOAD'
     REQUEST_TYPE = [
         (AUTOMATIC, _('Automatic')),
         (VIDEO, _('Video')),
@@ -306,6 +338,9 @@ class DownloadRequest(models.Model):
         blank=True
     )
     tags = TaggableManager(through=UUIDTaggedItem, blank=True)
+
+    def get_es_index(self):
+        return self.batch.get_es_index()
 
     def start(self):
         from video_downloading_platform.core.tasks import run_download_video_request, run_download_gallery_request
@@ -453,6 +488,15 @@ class DownloadReport(models.Model):
             if content:
                 url = reverse_lazy("get_downloaded_file", kwargs={'content_id': content.id})
                 return url
+        except Exception as e:
+            print(e)
+        return None
+
+    def get_thumbnail_id(self):
+        try:
+            content = self.downloadedcontent_set.filter(mime_type__in=['image/jpeg', 'image/png', 'image/webp']).first()
+            if content:
+                return content.id
         except Exception as e:
             print(e)
         return None

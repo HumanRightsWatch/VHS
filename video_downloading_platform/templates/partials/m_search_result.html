@@ -1,0 +1,171 @@
+{% load humanize %}
+{% load i18n %}
+{% load static %}
+
+
+<div class="card m-0 shadow-sm bg-light border-secondary">
+  <div class="card-body p-1">
+    <div class="row">
+      <div class="col-md-1">
+        <div class="mb-1">
+          {% if result.source.status.upper == 'SUCCEEDED' %}
+            <span class="badge bg-success">{{ result.source.status }}</span>
+          {% elif result.source.status.upper == 'FAILED' %}
+            <span class="badge bg-danger">{{ result.source.status }}</span>
+          {% else %}
+            <span class="badge bg-info">{{ result.source.status }}</span>
+          {% endif %}
+        </div>
+        {% if result.source.thumbnail_content_id %}
+          <img class="img-fluid rounded-start blurred-image img-thumbnail"
+               src="{% url "get_downloaded_content_thumbnail" content_id=result.source.thumbnail_content_id %}">
+        {% else %}
+          <img class="img-fluid rounded-start blurred-image img-thumbnail" src="{% static "images/placeholder.png" %}">
+        {% endif %}
+      </div>
+      <div class="col-md-8 text-truncate border-end border-secondary">
+        <div class="border-bottom border-secondary text-break pb-1">
+          <div class="font-monospace text-primary text-wrap">
+            {% if result.source.type == "video" %}
+              <i class="fa fa-video"></i>
+            {% elif result.source.type == "gallery" %}
+              <i class="fa fa-picture-o"></i>
+            {% endif %}
+            {% if result.source.post.title %}
+              {{ result.source.post.title }}
+            {% else %}
+              No title
+            {% endif %}
+          </div>
+          <div class="small">
+            {% for tag in result.source.tags %}
+              <span class="badge bg-secondary"><i class="fa fa-tag"></i> {{ tag }}</span>
+            {% endfor %}
+            {% if result.content_warning %}
+              <span class="text-danger">
+                  <i class="fa fa-warning"></i>
+                  {{ result.content_warning }}
+                </span>
+            {% else %}
+              <span class="text-success">
+                  <i class="fa fa-check"></i>
+                  {% translate "no warning" %}
+                </span>
+            {% endif %}
+          </div>
+        </div>
+        <div>
+          <div class="small text-muted">
+            <i class="fa fa-link"></i>
+            {{ result.source.origin }}
+            {% if "http" in result.source.origin %}
+              <a href="{{ result.source.origin }}" target="_blank"><i class="fa fa-external-link text-primary"></i></a>
+            {% endif %}
+          </div>
+          <div class="small text-muted">
+            <i class="fa fa-hashtag"></i>
+            {{ result.source.sha256 }}
+          </div>
+          <div class="small text-muted">
+            <i class="fa fa-calendar"></i>
+            {{ result.source.created_at }}
+          </div>
+          <div class="small text-muted">
+            <i class="fa fa-folder-open"></i>
+            {{ result.source.collection_name }}
+          </div>
+          <div class="small text-muted">
+            <i class="fa fa-file"></i>
+            {{ result.source.mimetype }}
+          </div>
+          <div class="small text-muted">
+            <i class="fa fa-user"></i>
+            {{ result.source.owner }} {% if result.source.owner == request.user.username %}(me){% endif %}
+          </div>
+        {% if result.source.post.description %}
+            <span class="small text-muted">Description:</span>
+            <div class="small text-wrap bg-white text-muted p-1 rounded">
+              {{ result.source.post.description }}
+            </div>
+          {% endif %}
+        </div>
+        <div>
+          {% if result.highlight.items %}
+            <div class="mt-2 border-top border-secondary">
+              {% for k,v in result.highlight.items %}
+                <span class="small text-muted">
+                  <i class="fa fa-search"></i>
+                  <samp>{{ k }}</samp>
+                </span>
+                <p class="small code-samples">
+                  {% for l in v %}
+                    <samp>{{ l|safe }}</samp><br>
+                  {% endfor %}
+                </p>
+              {% endfor %}
+            </div>
+          {% endif %}
+        </div>
+      </div>
+      <div class="col-md-3 text-truncate small">
+        <div class="row">
+          <div class="col">
+            <div class="">
+              <i class="text-primary fa fa-compass"></i> Platform:
+              {% if result.source.platform %}
+                {{ result.source.platform }}
+              {% else %}
+                unknown
+              {% endif %}
+            </div>
+            <div class="">
+              <i class="text-primary fa fa-calendar"></i> Upload date:
+              {% if result.source.post.upload_date %}
+                {{ result.source.post.upload_date }}
+              {% else %}
+                unknown
+              {% endif %}
+            </div>
+            <div class="">
+              <i class="text-primary fa fa-user"></i> Uploader:
+              {% if result.source.post.uploader %}
+                {{ result.source.post.uploader }}
+              {% else %}
+                unknown
+              {% endif %}
+            </div>
+            <div class="">
+              <i class="text-primary fa fa-comment"></i> Comments:
+              {% if result.source.stats.comment_count > -1 %}{{ result.source.stats.comment_count }}{% else %}
+                unknown{% endif %}
+            </div>
+            <div class="">
+              <i class="text-primary fa fa-thumbs-up"></i> Likes:
+              {% if result.source.stats.like_count > -1 %}{{ result.source.stats.like_count }}{% else %}
+                unknown{% endif %}
+            </div>
+            <div class="">
+              <i class="text-primary fa fa-video"></i> Views:
+              {% if result.source.stats.view_count > -1 %}{{ result.source.stats.view_count }}{% else %}
+                unknown{% endif %}
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="card-footer bg-transparent border-secondary m-0 p-1">
+    <div class="row">
+      <div class="col"></div>
+      <div class="col-md-4 text-end">
+        <div class="btn-group" role="group" aria-label="Basic example">
+          <a href="{% url "batch_details" batch_id=result.source.collection_id %}#{{ result.id }}"
+             class="btn btn-sm btn-primary">
+            <i class="fa fa-eye"></i>
+            {% translate "Details" %}
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
