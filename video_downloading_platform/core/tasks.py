@@ -97,8 +97,8 @@ def compute_downloaded_content_metadata(downloaded_content_id, download_request_
             h_md5.update(chunk)
         tmp.seek(0)
         mime_type = magic.from_buffer(tmp.read(2048), mime=True)
-        with exiftool.ExifToolHelper() as et:
-            exif = et.get_metadata(tmp.name)[0]
+        tmp.seek(0)
+        exif = _get_exif_data_for_file(tmp.name)
 
     downloaded_content.md5 = h_md5.hexdigest()
     downloaded_content.sha256 = h_sha256.hexdigest()
@@ -457,6 +457,10 @@ def index_download_request(request: DownloadRequest):
             if request.url == 'http://dummy.url.local':
                 entity.origin = 'User upload'
                 entity.platform = 'VHS'
+                entity.post = {
+                    'title': content.name,
+                    'description': content.metadata.get('description'),
+                }
 
             entity.save(index=index_name)
 
