@@ -3,20 +3,19 @@
 {% load static %}
 
 
-<div
-  class="card m-0 shadow-sm {% if result.source.is_hidden %}bg-light{% else %}bg-secondary-light{% endif %} border-secondary">
+<div class="card m-0 shadow-sm {% if result.source.is_hidden %}bg-light{% else %}bg-secondary-light{% endif %} border-secondary mt-2">
   <div class="card-body p-1">
     <div class="row">
       <div class="col-md-1">
         <div class="mb-1">
           {% if result.source.is_hidden %}
-            <span class="badge bg-dark">Deleted</span>
+            <span class="badge bg-opacity-75 bg-dark">Deleted</span>
           {% elif result.source.status.upper == 'SUCCEEDED' %}
-            <span class="badge bg-success">{{ result.source.status }}</span>
+            <span class="badge bg-opacity-75 bg-success">{{ result.source.status }}</span>
           {% elif result.source.status.upper == 'FAILED' %}
-            <span class="badge bg-danger">{{ result.source.status }}</span>
+            <span class="badge bg-opacity-75 bg-danger">{{ result.source.status }}</span>
           {% else %}
-            <span class="badge bg-info">{{ result.source.status }}</span>
+            <span class="badge bg-opacity-75 bg-info">{{ result.source.status }}</span>
           {% endif %}
         </div>
         {% if result.source.thumbnail_content_id %}
