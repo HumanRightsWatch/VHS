@@ -1,2 +1,9 @@
 // Typography
 $font-size-base: 0.8rem;
+$purple: #7122da;
+$primary: $purple;
+$secondary: #A991D4;
+
+.bg-secondary-light {
+  background-color: rgba($secondary, 0.1) !important;
+}

@@ -19,7 +19,7 @@
       <div id="batch-list">
         {% for batch in users_batches %}
           <div class="card mb-2">
-            <div class="card-header bg-opacity-25" id="{{ batch.id }}">
+            <div class="card-header bg-secondary-light" id="{{ batch.id }}">
               <div class="row">
                 <div class="col">
                   <span class="h5">{{ batch.name }}</span><br>
@@ -44,11 +44,11 @@
                       <i class="fa fa-arrow-circle-right" aria-hidden="true"></i>
                       <span id="{{ batch.id }}_submitted" class="badge ">0</span>
                     </span>
-                    <span class="badge bg-success">
+                    <span class="badge bg-success bg-opacity-50">
                       <i class="fa fa-check-circle" aria-hidden="true"></i>
                       <span id="{{ batch.id }}_succeeded" class="badge ">0</span>
                     </span>
-                    <span class="badge bg-danger">
+                    <span class="badge bg-danger bg-opacity-50">
                       <i class="fa fa-times-circle" aria-hidden="true"></i>
                       <span id="{{ batch.id }}_failed" class="badge ">0</span>
                     </span>
@@ -64,7 +64,7 @@
             <div class="card-body">
               <p class="lead">{{ batch.description }}</p>
             </div>
-            <div class="card-footer text-end">
+            <div class="card-footer bg-secondary-light text-end">
               {% include "partials/m_batch_controls.html" with batch=batch show_details_btn=True %}
             </div>
           </div>
@@ -74,7 +74,7 @@
 
     <div class="col-md-5">
       <h2>{% translate "Create new collection" %}</h2>
-      <div class="card mb-4 bg-light">
+      <div class="card mb-4 bg-secondary-light">
         <div class="card-body">
           <form method="post">
             {% csrf_token %}
