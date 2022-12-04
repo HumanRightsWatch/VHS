@@ -11,14 +11,14 @@
       <div class="col-md-12 mb-4">
         <h4>
           {% if download_request.is_hidden %}
-            <span class="badge bg-dark">Deleted</span>
+            <span class="badge bg-opacity-75 bg-dark">Deleted</span>
           {% endif %}
           {% if download_request.status == 'SUCCEEDED' %}
-            <span class="badge bg-success">{{ download_request.get_status_display }}</span>
+            <span class="badge bg-opacity-75 bg-success">{{ download_request.get_status_display }}</span>
           {% elif download_request.status == 'FAILED' %}
-            <span class="badge bg-danger">{{ download_request.get_status_display }}</span>
+            <span class="badge bg-opacity-75 bg-danger">{{ download_request.get_status_display }}</span>
           {% else %}
-            <span class="badge bg-info">{{ download_request.get_status_display }}</span>
+            <span class="badge bg-opacity-75 bg-info">{{ download_request.get_status_display }}</span>
           {% endif %}
           {% if in_error %}
             <a href="#" class="btn btn-sm btn-danger"
