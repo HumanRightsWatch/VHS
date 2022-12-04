@@ -1,0 +1,108 @@
+{% load humanize %}
+{% load i18n %}
+
+
+<div class="col-md-12">
+  <h5>
+    <i class="fa fa-file text-primary"></i>
+    <samp>{{ content.name }}</samp>
+  </h5>
+  <div class="btn-group btn-group-sm" role="group">
+    {% if content.metadata %}
+      <a href="#" data-bs-toggle="modal" data-bs-target="#metadataModal-{{ content.id }}-meta"
+         class="btn btn-sm btn-primary">
+        <i class="fa fa-eye" aria-hidden="true"></i> {% translate "View metadata" %}
+      </a>
+      {% include "partials/m_modal_metadata.html" with id=content.id metadata=content.metadata ext="meta" %}
+    {% endif %}
+    {% if content.exif_data %}
+      <a href="#" data-bs-toggle="modal" data-bs-target="#metadataModal-{{ content.id }}-exif"
+         class="btn btn-sm btn-primary">
+        <i class="fa fa-eye" aria-hidden="true"></i> {% translate "View exif" %}
+      </a>
+      {% include "partials/m_modal_metadata.html" with id=content.id metadata=content.exif_data ext="exif" %}
+    {% endif %}
+    <a href="{% url "get_downloaded_content" content_id=content.id %}" target="_blank"
+       class="btn btn-sm btn-primary">
+      <i class="fa fa-play" aria-hidden="true"></i> {% translate "Play" %}
+    </a>
+    <a href="{% url "force_download_content" content_id=content.id %}"
+       class="btn btn-sm btn-primary">
+      <i class="fa fa-download"></i>
+      {% translate "Download" %}
+    </a>
+  </div>
+
+  <div class="border-start border-primary border-2 mt-2">
+    <table class="table table-sm">
+      <tbody>
+      <tr>
+        <td>ID</td>
+        <td><i class="fa fa-hashtag text-primary"></i> <samp>{{ content.id }}</samp></td>
+      </tr>
+      <tr>
+        <td>Created at</td>
+        <td>
+          <i class="fa fa-calendar text-primary"></i> {{ content.created_at }}
+          ({{ content.created_at|naturaltime }})
+        </td>
+      </tr>
+      <tr>
+        <td>Updated at</td>
+        <td>
+          <i class="fa fa-calendar text-primary"></i> {{ content.updated_at }}
+          ({{ content.updated_at|naturaltime }})
+        </td>
+      </tr>
+      <tr>
+        <td>Mime type</td>
+        <td><i class="fa fa-file text-primary"></i> <samp>{{ content.mime_type }}</samp></td>
+      </tr>
+      <tr>
+        <td>MD5</td>
+        <td><i class="fa fa-hashtag text-primary"></i> <samp>{{ content.md5 }}</samp></td>
+      </tr>
+      <tr>
+        <td>SHA-256</td>
+        <td><i class="fa fa-hashtag text-primary"></i> <samp>{{ content.sha256 }}</samp></td>
+      </tr>
+      {% if content.target_file %}
+        {% for data in content.indexed_data %}
+          <tr>
+            <td>Platform</td>
+            <td>{{ data.source.platform }}</td>
+          </tr>
+          <tr>
+            <td>Title</td>
+            <td>{{ data.source.title|default:"no data" }}</td>
+          </tr>
+          <tr>
+            <td>Upload date</td>
+            <td>{{ data.source.post.upload_date|default:"no data" }}</td>
+          </tr>
+          <tr>
+            <td>Uploader</td>
+            <td>{{ data.source.post.uploader|default:"no data" }}</td>
+          </tr>
+          <tr>
+            <td>#comments</td>
+            <td>{{ data.source.stats.comment_count|default:"no data" }}</td>
+          </tr>
+          <tr>
+            <td>#likes</td>
+            <td>{{ data.source.stats.like_count|default:"no data" }}</td>
+          </tr>
+          <tr>
+            <td>#views</td>
+            <td>{{ data.source.stats.view_count|default:"no data" }}</td>
+          </tr>
+          <tr>
+            <td>Description</td>
+            <td class=""><i>{{ data.source.post.description }}</i></td>
+          </tr>
+        {% endfor %}
+      {% endif %}
+      </tbody>
+    </table>
+  </div>
+</div>

@@ -1,3 +1,4 @@
+import logging
 import tempfile
 import uuid
 import os
@@ -20,6 +21,10 @@ from django_q.tasks import async_task, schedule
 from gallery_dl.extractor import find as gdl_find_extractors
 from taggit.managers import TaggableManager
 from taggit.models import GenericUUIDTaggedItemBase, TaggedItemBase
+
+from video_downloading_platform.core.utils import transform_hl_results
+
+logger = logging.getLogger(__name__)
 
 
 class UUIDTaggedItem(GenericUUIDTaggedItemBase, TaggedItemBase):
@@ -168,6 +173,37 @@ class Batch(models.Model):
 
     def get_es_index(self):
         return f'c.{self.es_index}'
+
+    @property
+    def indexed_data(self):
+        query = {
+            "query": {
+                "query_string": {
+                    "query": "*"
+                }
+            },
+            "_source": [
+                "collection_id", "collection_name", "created_at", "mimetype", "origin", "owner", "platform",
+                "post.description", "post.title", "post.upload_date", "post.uploader", "sha256", "stats.comment_count",
+                "stats.like_count", "stats.view_count", "status", "tags", "thumbnail_content_id", "type", "is_hidden",
+                "request_id"
+            ],
+            "sort": {"created_at": "desc"},
+            "size": 10000,
+        }
+        from elasticsearch import Elasticsearch
+        es = Elasticsearch(settings.ELASTICSEARCH_HOSTS)
+        try:
+            raw_results = es.search(index=self.get_es_index(), body=query)
+            results = transform_hl_results(raw_results)
+            return results
+        except Exception as e:
+            logger.exception(e)
+            return []
+
+    @property
+    def failed_download_requests(self):
+        return self.download_requests.exclude(status=DownloadRequest.Status.SUCCEEDED)
 
     @staticmethod
     def get_users_batches(user):
@@ -341,6 +377,33 @@ class DownloadRequest(models.Model):
 
     def get_es_index(self):
         return self.batch.get_es_index()
+
+    @property
+    def indexed_data(self):
+        query = {
+            "query": {
+                "query_string": {
+                    "query": f'request_id: "{self.id}"'
+                }
+            },
+            "_source": [
+                "collection_id", "collection_name", "created_at", "mimetype", "origin", "owner", "platform",
+                "post.description", "post.title", "post.upload_date", "post.uploader", "sha256", "stats.comment_count",
+                "stats.like_count", "stats.view_count", "status", "tags", "thumbnail_content_id", "type", "is_hidden",
+                "request_id"
+            ],
+            "sort": {"created_at": "desc"},
+            "size": 10000,
+        }
+        from elasticsearch import Elasticsearch
+        es = Elasticsearch(settings.ELASTICSEARCH_HOSTS)
+        try:
+            raw_results = es.search(index=self.get_es_index(), body=query)
+            results = transform_hl_results(raw_results)
+            return results
+        except Exception as e:
+            logger.exception(e)
+            return []
 
     def start(self):
         from video_downloading_platform.core.tasks import run_download_video_request, run_download_gallery_request
@@ -583,6 +646,33 @@ class DownloadedContent(models.Model):
         help_text=_('Who owns the current download request.'),
         editable=False
     )
+
+    @property
+    def indexed_data(self):
+        query = {
+            "query": {
+                "query_string": {
+                    "query": f'content_id: "{self.id}"'
+                }
+            },
+            "_source": [
+                "collection_id", "collection_name", "created_at", "mimetype", "origin", "owner", "platform",
+                "post.description", "post.title", "post.upload_date", "post.uploader", "sha256", "stats.comment_count",
+                "stats.like_count", "stats.view_count", "status", "tags", "thumbnail_content_id", "type", "is_hidden",
+                "request_id"
+            ],
+            "sort": {"created_at": "desc"},
+            "size": 10000,
+        }
+        from elasticsearch import Elasticsearch
+        es = Elasticsearch(settings.ELASTICSEARCH_HOSTS)
+        try:
+            raw_results = es.search(index='c.*', body=query)
+            results = transform_hl_results(raw_results)
+            return results
+        except Exception as e:
+            logger.exception(e)
+            return []
 
     @staticmethod
     def get_users_downloaded_content(user):

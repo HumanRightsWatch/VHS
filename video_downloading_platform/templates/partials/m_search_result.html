@@ -3,12 +3,15 @@
 {% load static %}
 
 
-<div class="card m-0 shadow-sm bg-light border-secondary">
+<div
+  class="card m-0 shadow-sm {% if result.source.is_hidden %}bg-secondary bg-opacity-25{% else %}bg-light{% endif %} border-secondary">
   <div class="card-body p-1">
     <div class="row">
       <div class="col-md-1">
         <div class="mb-1">
-          {% if result.source.status.upper == 'SUCCEEDED' %}
+          {% if result.source.is_hidden %}
+            <span class="badge bg-dark">Deleted</span>
+          {% elif result.source.status.upper == 'SUCCEEDED' %}
             <span class="badge bg-success">{{ result.source.status }}</span>
           {% elif result.source.status.upper == 'FAILED' %}
             <span class="badge bg-danger">{{ result.source.status }}</span>
@@ -82,7 +85,7 @@
             <i class="fa fa-user"></i>
             {{ result.source.owner }} {% if result.source.owner == request.user.username %}(me){% endif %}
           </div>
-        {% if result.source.post.description %}
+          {% if result.source.post.description %}
             <span class="small text-muted">Description:</span>
             <div class="small text-wrap bg-white text-muted p-1 rounded">
               {{ result.source.post.description }}
@@ -158,8 +161,17 @@
     <div class="row">
       <div class="col"></div>
       <div class="col-md-4 text-end">
-        <div class="btn-group" role="group" aria-label="Basic example">
-          <a href="{% url "batch_details" batch_id=result.source.collection_id %}#{{ result.id }}"
+        <div class="btn-group" role="group">
+
+          <a href="{% url "force_download_content" content_id=result.id %}"
+             class="btn btn-sm btn-primary">
+            <i class="fa fa-download"></i> {% translate "Download" %}
+          </a>
+          <a href="{% url "get_downloaded_content" result.id %}" target="_blank"
+             class="btn btn-sm btn-primary">
+            <i class="fa fa-play" aria-hidden="true"></i> {% translate "Play" %}
+          </a>
+          <a href="{% url "download_request_details" result.source.request_id %}"
              class="btn btn-sm btn-primary">
             <i class="fa fa-eye"></i>
             {% translate "Details" %}

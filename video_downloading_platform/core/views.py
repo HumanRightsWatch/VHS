@@ -25,7 +25,7 @@ from video_downloading_platform.core.forms import BatchForm, BatchRequestForm, U
 from video_downloading_platform.core.models import Batch, DownloadRequest, DownloadedContent, DownloadReport, \
     _get_request_types_to_run, BatchTeam
 from video_downloading_platform.core.tasks import compute_downloaded_content_metadata, index_download_request_by_id, \
-    index_collection_by_id
+    index_collection_by_id, index_download_request
 from video_downloading_platform.users.admin import User
 
 
@@ -286,6 +286,14 @@ def get_downloaded_content_view(request, content_id):
 
 
 @login_required
+def force_download_content_view(request, content_id):
+    content = DownloadedContent.objects.get(id=content_id)
+    response = HttpResponse(content.content, content_type=content.mime_type)
+    response['Content-Disposition'] = 'attachment; filename=' + content.name
+    return response
+
+
+@login_required
 @cache_page(60 * 5)
 def get_downloaded_file_view(request, content_id):
     content = DownloadedContent.objects.get(id=content_id)
@@ -417,13 +425,26 @@ def download_collection_zip_view(request, batch_id):
 
 
 @login_required
+def download_request_details_view(request, request_id):
+    download_request = get_object_or_404(DownloadRequest, id=request_id)
+    return render(
+        request,
+        'pages/download_request_details.html',
+        {
+            'download_request': download_request
+        }
+    )
+
+
+@login_required
 def hide_download_request_view(request, request_id):
     try:
         download_request = DownloadRequest.objects.get(id=request_id)
         download_request.is_hidden = True
         download_request.save()
-    except Exception:
-        pass
+        transaction.on_commit(lambda: index_download_request(download_request))
+    except Exception as e:
+        print(e)
     return redirect(request.META.get('HTTP_REFERER'))
 
 
@@ -433,8 +454,9 @@ def show_download_request_view(request, request_id):
         download_request = DownloadRequest.objects.get(id=request_id)
         download_request.is_hidden = False
         download_request.save()
-    except Exception:
-        pass
+        transaction.on_commit(lambda: index_download_request(download_request))
+    except Exception as e:
+        print(e)
     return redirect(request.META.get('HTTP_REFERER'))
 
 
@@ -465,18 +487,18 @@ def batch_edit_view(request, batch_id):
 
 @login_required
 def edit_download_request_view(request, request_id):
-    request_obj = get_object_or_404(DownloadRequest, id=request_id)
-    form = DownloadRequestLightForm(request.POST or None, instance=request_obj)
+    download_request = get_object_or_404(DownloadRequest, id=request_id)
+    form = DownloadRequestLightForm(request.POST or None, instance=download_request)
     if form.is_valid():
         form.save()
-        transaction.on_commit(lambda: async_task(index_download_request_by_id, request_id))
+        transaction.on_commit(lambda: index_download_request(download_request))
         return redirect(request.META.get('HTTP_REFERER'))
     return render(
         request,
         'partials/m_modal_form.html',
         {
             'form': form,
-            'action': reverse_lazy('edit_download_request', args=[request_obj.id]),
+            'action': reverse_lazy('edit_download_request', args=[request_id]),
             'title': _('Edit tags and content warning')
         }
     )

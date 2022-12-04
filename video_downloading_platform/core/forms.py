@@ -5,6 +5,7 @@ from django.core.exceptions import ValidationError
 from django.utils.translation import gettext_lazy as _
 
 from video_downloading_platform.core.models import Batch, BatchRequest, BatchTeam, DownloadRequest, UploadRequest
+from video_downloading_platform.core.utils import transform_hl_results
 
 
 class BatchTeamForm(forms.ModelForm):
@@ -113,22 +114,6 @@ class UploadForm(forms.Form):
         return UploadRequest.objects.get(id=request_id)
 
 
-def transform_results(results):
-    return [doc['_source'] for doc in results['hits']['hits']]
-
-
-def transform_hl_results(results):
-    ret = []
-    for doc in results['hits']['hits']:
-        d = {}
-        for k, v in doc.items():
-            if k.startswith('_'):
-                k = k[1:]
-            d[k] = v
-        ret.append(d)
-    return ret
-
-
 class SearchForm(forms.Form):
     q = forms.CharField(
         max_length=128,
@@ -153,7 +138,8 @@ class SearchForm(forms.Form):
             "_source": [
                 "collection_id", "collection_name", "created_at", "mimetype", "origin", "owner", "platform",
                 "post.description", "post.title", "post.upload_date", "post.uploader", "sha256", "stats.comment_count",
-                "stats.like_count", "stats.view_count", "status", "tags", "thumbnail_content_id", "type"
+                "stats.like_count", "stats.view_count", "status", "tags", "thumbnail_content_id", "type", "is_hidden",
+                "request_id"
             ],
             "sort": {"created_at": "desc"},
             "size": 75,

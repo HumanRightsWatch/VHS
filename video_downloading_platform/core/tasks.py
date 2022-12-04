@@ -390,9 +390,7 @@ def index_download_request(request: DownloadRequest):
         return
 
     Entity.init(index=index_name)
-
-    if request.is_hidden:
-        return
+    print(f'Is hidden {request.id}: [{request.is_hidden}]')
 
     for report in request.report.all():
         for content in report.downloadedcontent_set.all():
@@ -408,6 +406,7 @@ def index_download_request(request: DownloadRequest):
             entity.owner_id = str(request.owner.id)
             entity.tags = [str(t) for t in request.tags.all()]
             entity.request_id = str(request.id)
+            entity.is_hidden = bool(request.is_hidden)
             entity.collection_id = str(request.batch.id)
             entity.collection_name = str(request.batch.name)
             entity.collection_description = str(request.batch.description)

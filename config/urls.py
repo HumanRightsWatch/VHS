@@ -21,7 +21,7 @@ from video_downloading_platform.core.views import (
     reopen_batch_view, BatchTeamUpdateView, download_collection_zip_view,
     hide_download_request_view, show_download_request_view, mark_all_notification_read_view, batch_edit_view,
     edit_download_request_view, statistics_view, add_content_to_batch_view, search_view, get_thumbnail_view,
-    get_downloaded_content_thumbnail,
+    get_downloaded_content_thumbnail, download_request_details_view, force_download_content_view,
 )
 urlpatterns = [
                   path("", home_view, name="home"),
@@ -55,8 +55,10 @@ urlpatterns = [
                   path("request/<str:request_id>/edit", edit_download_request_view, name="edit_download_request"),
                   path("request/<str:request_id>/hide", hide_download_request_view, name="hide_download_request"),
                   path("request/<str:request_id>/show", show_download_request_view, name="show_download_request"),
+                  path("request/<str:request_id>/details", download_request_details_view, name="download_request_details"),
                   path("content/<str:content_id>", get_downloaded_file_view, name="get_downloaded_file"),
-                  path("content/<str:content_id>/download", get_downloaded_content_view, name="get_downloaded_content"),
+                  path("content/<str:content_id>/play", get_downloaded_content_view, name="get_downloaded_content"),
+                  path("content/<str:content_id>/download", force_download_content_view, name="force_download_content"),
                   path("content/<str:content_id>/thumbnail", get_downloaded_content_thumbnail, name="get_downloaded_content_thumbnail"),
                   path("report/<str:report_id>/download", get_report_archive_view, name="get_report_archive"),
                   path("stats", statistics_view, name="statistics"),

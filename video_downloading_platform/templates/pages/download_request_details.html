@@ -1,0 +1,165 @@
+{% extends "base.html" %}
+{% load crispy_forms_tags %}
+{% load humanize %}
+{% load i18n %}
+{% load static %}
+
+{% block content %}
+  {% with in_error=download_request.report.first.in_error %}
+    <div class="row justify-content-md-center">
+      <h2>{% translate "Download request details" %}</h2>
+      <div class="col-md-12 mb-4">
+        <h4>
+          {% if download_request.is_hidden %}
+            <span class="badge bg-dark">Deleted</span>
+          {% endif %}
+          {% if download_request.status == 'SUCCEEDED' %}
+            <span class="badge bg-success">{{ download_request.get_status_display }}</span>
+          {% elif download_request.status == 'FAILED' %}
+            <span class="badge bg-danger">{{ download_request.get_status_display }}</span>
+          {% else %}
+            <span class="badge bg-info">{{ download_request.get_status_display }}</span>
+          {% endif %}
+          {% if in_error %}
+            <a href="#" class="btn btn-sm btn-danger"
+               data-bs-toggle="modal" data-bs-target="#errorModal-{{ request.id }}">
+              {% translate "See error log" %}
+            </a>
+          {% endif %}
+        </h4>
+        {% include "partials/m_modal_error.html" with id=request.id error_message=download_request.report.first.error_message %}
+        <h4>
+          {% if download_request.type == "VIDEO" %}
+            <i class="fa fa-video text-primary"></i>
+          {% elif download_request.type == "GALLERY" %}
+            <i class="fa fa-picture-o text-primary"></i>
+          {% endif %}
+          <samp>{{ download_request.url }}</samp>
+        </h4>
+        <div class="btn-group" role="group">
+          {% if download_request.is_hidden %}
+            <a href="{% url "show_download_request" download_request.id %}" class="btn btn-sm btn-primary">
+              <i class="fa fa-folder-open" aria-hidden="true"></i> {% trans "Recover" %}
+            </a>
+          {% else %}
+            <a href="{% url "hide_download_request" download_request.id %}" class="btn btn-sm btn-dark">
+              <i class="fa fa-trash" aria-hidden="true"></i> {% trans "Delete" %}
+            </a>
+          {% endif %}
+          <a href="#" onclick="show_modal_form('{% url "edit_download_request" download_request.id %}')"
+             class="btn btn-sm btn-primary">
+            <i class="fa fa-pencil"></i>
+            {% translate "Edit" %}
+          </a>
+          <a href="{% url "get_report_archive" download_request.report.first.id %}"
+             class="btn btn-sm btn-primary">
+            <i class="fa fa-download"></i>
+            {% translate "Download archive" %}
+          </a>
+        </div>
+      </div>
+      <div class="row justify-content-md-center">
+        <div class="col-md-9">
+          <h4>Details</h4>
+          <table class="table table-sm">
+            <tbody>
+            <tr>
+              <td>ID</td>
+              <td><i class="fa fa-hashtag text-primary"></i> <samp>{{ download_request.id }}</samp></td>
+            </tr>
+            <tr>
+              <td>Created at</td>
+              <td>
+                <i class="fa fa-calendar text-primary"></i> {{ download_request.created_at }}
+                ({{ download_request.created_at|naturaltime }})
+              </td>
+            </tr>
+            <tr>
+              <td>Updated at</td>
+              <td>
+                <i class="fa fa-calendar text-primary"></i> {{ download_request.updated_at }}
+                ({{ download_request.updated_at|naturaltime }})
+              </td>
+            </tr>
+            <tr>
+              <td>Collection</td>
+              <td>
+                <i class="fa fa-folder-open text-primary"></i>
+                <a href="{% url "batch_details" batch_id=download_request.batch_id %}">
+                  {{ download_request.batch.name }}
+                </a>
+              </td>
+            </tr>
+            <tr>
+              <td>Type</td>
+              <td>{{ download_request.type }}</td>
+            </tr>
+            <tr>
+              <td>Owner</td>
+              <td>
+                <i class="fa fa-user text-primary"></i>
+                {{ download_request.owner }} {% if download_request.owner == request.user %}(me){% endif %}
+              </td>
+            </tr>
+            <tr>
+              <td>Content warning</td>
+              <td>
+                {% if download_request.content_warning %}
+                  <span class="text-danger">
+                      <i class="fa fa-warning"></i>
+                      {{ download_request.content_warning }}
+                    </span>
+                {% else %}
+                  <span class="text-success">
+                      <i class="fa fa-warning"></i>
+                      {% translate "no warning" %}
+                    </span>
+                {% endif %}
+              </td>
+            </tr>
+            <tr>
+              <td>Tags</td>
+              <td>
+                {% for tag in download_request.tags.all %}
+                  <span class="badge bg-secondary"><i class="fa fa-tag"></i> {{ tag }}</span>
+                {% empty %}
+                  No tags
+                {% endfor %}
+              </td>
+            </tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="col-md-3">
+          {% with thumbnail=download_request.report.first.get_thumbnail %}
+            {% if thumbnail %}
+              {% if download_request.batch.status != "ARCHIVED" %}
+                <div>
+                  <img src="{{ thumbnail }}" class="img-fluid rounded-start blurred-image mt-4" alt="Overview">
+                </div>
+              {% endif %}
+            {% else %}
+              <span class="text-muted">
+              {% translate "No overview" %}
+              </span>
+            {% endif %}
+          {% endwith %}
+        </div>
+      </div>
+      <div class="row justify-content-md-center">
+        <h4>Downloaded content</h4>
+        {% for content in download_request.report.first.downloadedcontent_set.all %}
+          <div class="col-md-12 mt-1">
+            {% if not ".json" in content.name and not ".description" in content.name %}
+              {% include "partials/m_download_content_extended_details.html" with content=content %}
+            {% endif %}
+          </div>
+        {% empty %}
+          <div class="col-md-12">
+            {% translate "Nothing :(" %}
+          </div>
+        {% endfor %}
+      </div>
+    </div>
+  {% endwith %}
+{% endblock %}

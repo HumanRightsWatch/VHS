@@ -84,9 +84,11 @@
   </div>
   <div class="row justify-content-md-center mt-4">
     {% for r in results %}
-      <div class="col-md-12 mt-1">
-        {% include "partials/m_search_result.html" with result=r %}
-      </div>
+      {% if not r.source.is_hidden %}
+        <div class="col-md-12 mt-1">
+          {% include "partials/m_search_result.html" with result=r %}
+        </div>
+      {% endif %}
     {% endfor %}
   </div>
 {% endblock %}

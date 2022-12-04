@@ -3,8 +3,39 @@
 <div class="row">
   {% include "partials/m_batch_header.html" %}
 </div>
-<div class="row">
-  <div class="mt-4">
-    {% include "partials/m_batch_details.html" with batch_status=batch.status %}
-  </div>
+<div class="row justify-content-md-center mt-4">
+  {% with failed_dr=batch.failed_download_requests %}
+    {% if failed_dr %}
+      <div class="col-md-12">
+        <h4>
+          {% translate "Requests not completed" %}
+          <a class="btn btn-sm btn-primary" data-bs-toggle="collapse" href="#collapseFailedRequests" role="button"
+             aria-expanded="false" aria-controls="collapseFailedRequests">
+            <i class="fa fa-eye"></i>
+          </a>
+        </h4>
+        <div class="collapse" id="collapseFailedRequests">
+          <ul>
+            {% for download_request in failed_dr %}
+              <li>
+                <samp>{{ download_request.url }}</samp> -
+                <a href="{% url "download_request_details" request_id=download_request.id %}"
+                   class="">
+                  <i class="fa fa-eye"></i>
+                  {% translate "Details" %}
+                </a></li>
+            {% endfor %}
+          </ul>
+        </div>
+      </div>
+    {% endif %}
+  {% endwith %}
+</div>
+<div class="row justify-content-md-center mt-4">
+  <h4>{% translate "Successful requests" %}</h4>
+  {% for r in batch.indexed_data %}
+    <div class="col-md-12 mt-1">
+      {% include "partials/m_search_result.html" with result=r %}
+    </div>
+  {% endfor %}
 </div>
