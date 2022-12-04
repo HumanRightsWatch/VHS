@@ -387,6 +387,7 @@ def index_download_request(request: DownloadRequest):
             index.create()
     except Exception as e:
         logger.error(e)
+        return
 
     Entity.init(index=index_name)
 
