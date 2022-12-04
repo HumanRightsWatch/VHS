@@ -75,6 +75,9 @@
           <div class="small text-muted">
             <i class="fa fa-folder-open"></i>
             {{ result.source.collection_name }}
+            <a href="{% url "batch_details" batch_id=result.source.collection_id %}">
+              <i class="fa fa-eye"></i>
+            </a>
           </div>
           <div class="small text-muted">
             <i class="fa fa-file"></i>

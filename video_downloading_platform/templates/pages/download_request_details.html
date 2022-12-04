@@ -7,7 +7,6 @@
 {% block content %}
   {% with in_error=download_request.report.first.in_error %}
     <div class="row justify-content-md-center">
-      <h2>{% translate "Download request details" %}</h2>
       <div class="col-md-12 mb-4">
         <h4>
           {% if download_request.is_hidden %}

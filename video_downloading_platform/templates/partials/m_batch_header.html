@@ -1,11 +1,24 @@
 {% load i18n %}
 <div class="col-md-8">
-  <h1>
-    <span class="badge bg-secondary">{{ batch.download_requests.count }}</span>
+  <span class="h4">
+    <span class="badge bg-secondary">
+      <i class="fa fa-arrow-circle-right" aria-hidden="true"></i>
+      <span id="{{ batch.id }}_submitted" class="badge ">0</span>
+    </span>
+    <span class="badge bg-success bg-opacity-50">
+      <i class="fa fa-check-circle" aria-hidden="true"></i>
+      <span id="{{ batch.id }}_succeeded" class="badge ">0</span>
+    </span>
+    <span class="badge bg-danger bg-opacity-50">
+      <i class="fa fa-times-circle" aria-hidden="true"></i>
+      <span id="{{ batch.id }}_failed" class="badge ">0</span>
+    </span>
+  </span>
+  <span class="h2">
     {{ batch.name }}
-  </h1>
+  </span>
   {% if batch.tags.all %}
-    <div>
+    <div class="mt-2">
       {% include "partials/m_batch_tags.html" with batch=batch %}
     </div>
   {% endif %}
