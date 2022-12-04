@@ -79,7 +79,6 @@ services:
       - WATCHTOWER_CLEANUP=true
       - WATCHTOWER_LABEL_ENABLE=true
       - WATCHTOWER_INCLUDE_RESTARTING=true
-    restart: always
     labels:
       - "com.centurylinklabs.watchtower.enable=true"
 
