@@ -13,6 +13,7 @@ services:
       - postgres
       - redis
       - minio
+      - elasticsearch
     env_file:
       - ./.env
     restart: always
@@ -38,6 +39,7 @@ services:
       - redis
       - postgres
       - minio
+      - elasticsearch
     env_file:
       - ./.env
     ports: []
@@ -59,6 +61,13 @@ services:
       interval: 30s
       timeout: 20s
       retries: 3
+
+  elasticsearch:
+    image: elasticsearch:8.4.1
+    environment:
+      - discovery.type='single-node'
+      - xpack.security.enabled='false'
+      - "ES_JAVA_OPTS=-Xms2048m -Xmx2048m"
 
   watchtower:
     image: containrrr/watchtower
