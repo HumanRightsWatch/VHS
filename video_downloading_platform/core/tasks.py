@@ -331,11 +331,11 @@ def create_zip_archive(report_id):
         logger.error(e)
 
 
-def __try_recovering_date(d):
+def __try_recovering_date(d, default='1970-01-01'):
     try:
         return parse(d)
     except:
-        return d
+        return parse(default)
 
 
 def __parse_exif(exif):
