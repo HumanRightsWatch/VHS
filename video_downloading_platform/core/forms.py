@@ -142,7 +142,7 @@ class SearchForm(forms.Form):
                 "request_id"
             ],
             "sort": {"created_at": "desc"},
-            "size": 75,
+            "size": 250,
         }
 
         from elasticsearch import Elasticsearch
