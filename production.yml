@@ -5,6 +5,7 @@ volumes:
   production_postgres_data_backups: {}
   production_traefik: {}
   production_minio_data: {}
+  production_elasticsearch_data: {}
 
 services:
   django:
@@ -63,6 +64,8 @@ services:
       - discovery.type='single-node'
       - xpack.security.enabled='false'
       - "ES_JAVA_OPTS=-Xms2048m -Xmx2048m"
+    volumes:
+      - production_elasticsearch_data:/usr/share/elasticsearch/data
 
   traefik:
     build:
