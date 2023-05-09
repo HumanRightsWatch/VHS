@@ -333,3 +333,7 @@ video_downloading_platform/media/
 .env
 .envs/*
 !.envs/.local/
+
+deployment_package/
+media/
+trash/

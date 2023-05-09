@@ -15,6 +15,7 @@ services:
       - postgres
       - redis
       - minio
+      - playwright
       - elasticsearch
     volumes:
       - .:/app:z
@@ -35,6 +36,7 @@ services:
       - redis
       - postgres
       - minio
+      - playwright
       - elasticsearch
     volumes:
       - .:/app:z
@@ -68,7 +70,10 @@ services:
       interval: 30s
       timeout: 20s
       retries: 3
-
+  playwright:
+    image: ghcr.io/piroguetoolsuite/playwright-rest-api:main
+    container_name: video_downloading_platform_local_playwright
+    restart: unless-stopped
   elasticsearch:
     image: elasticsearch:8.4.1
     ports:

@@ -7,8 +7,12 @@ import zipfile
 from os import path
 import logging
 import hashlib
+from zipfile import ZipFile
+
 import magic
 from tempfile import NamedTemporaryFile
+
+import requests
 from dateutil.parser import parse
 
 import exiftool
@@ -152,6 +156,19 @@ def _manage_downloaded_files(directory, owner, download_report, cw, request_type
         downloaded_content.save()
 
 
+def take_url_screenshot(url, output_dir):
+    payload = {
+        'url': url
+    }
+    response = requests.post('http://playwright:80/capture', json=payload)
+    if response.status_code == 200:
+        with NamedTemporaryFile() as out:
+            out.write(response.content)
+            with ZipFile(out.name, 'r') as archive:
+                with archive.open('screenshot.png') as screenshot_file:
+                    with open(f'{output_dir}/webpage_screenshot.png', mode='wb') as s:
+                        s.write(screenshot_file.read())
+
 def run_download_video_request(download_request_id):
     download_request = DownloadRequest.objects.get(id=download_request_id)
     download_request.status = DownloadRequest.Status.PROCESSING
@@ -176,6 +193,9 @@ def run_download_video_request(download_request_id):
             with youtube_dl.YoutubeDL(options) as ydl:
                 print('downloading video', download_request.url)
                 ydl.download([download_request.url])
+
+            # Take URL screenshot
+            take_url_screenshot(download_request.url, tmp_dir)
 
             _manage_downloaded_files(tmp_dir, owner, download_report, download_request.content_warning,
                                      download_request.type)
@@ -246,6 +266,9 @@ def run_download_gallery_request(download_request_id):
         with tempfile.TemporaryDirectory() as tmp_dir:
             config.set((), "base-directory", tmp_dir)
             job.DownloadJob(download_request.url).run()
+
+            # Take URL screenshot
+            take_url_screenshot(download_request.url, tmp_dir)
 
             _manage_downloaded_files(tmp_dir, owner, download_report, download_request.content_warning,
                                      download_request.type)

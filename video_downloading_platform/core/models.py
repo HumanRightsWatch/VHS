@@ -133,7 +133,7 @@ class Batch(models.Model):
     tags = TaggableManager(through=UUIDTaggedItem, blank=True)
     es_index = models.CharField(
         max_length=16,
-        default=_random_id_16(),
+        default=_random_id_16,
         editable=False,
     )
     indexed = models.BooleanField(default=False)
@@ -557,7 +557,7 @@ class DownloadReport(models.Model):
 
     def get_thumbnail_id(self):
         try:
-            content = self.downloadedcontent_set.filter(mime_type__in=['image/jpeg', 'image/png', 'image/webp']).first()
+            content = self.downloadedcontent_set.filter(mime_type__in=['image/jpeg', 'image/png', 'image/webp']).exclude(name='webpage_screenshot.png').first()
             if content:
                 return content.id
         except Exception as e:

@@ -17,6 +17,7 @@ services:
       - postgres
       - redis
       - minio
+      - playwright
       - elasticsearch
     env_file:
       - ./.envs/.production/.django
@@ -41,9 +42,16 @@ services:
       - redis
       - postgres
       - minio
+      - playwright
       - elasticsearch
     ports: []
     command: /start-worker
+
+  playwright:
+    image: ghcr.io/piroguetoolsuite/playwright-rest-api:main
+    restart: unless-stopped
+    labels:
+      - "com.centurylinklabs.watchtower.enable=true"
 
   minio:
     image: minio/minio:RELEASE.2021-06-17T00-10-46Z.hotfix.e6c50dc4c

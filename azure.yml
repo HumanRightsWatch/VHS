@@ -14,6 +14,7 @@ services:
       - postgres
       - redis
       - minio
+      - playwright
       - elasticsearch
     env_file:
       - ./.env
@@ -40,12 +41,19 @@ services:
       - redis
       - postgres
       - minio
+      - playwright
       - elasticsearch
     env_file:
       - ./.env
     ports: []
     command: /start-worker
     restart: always
+    labels:
+      - "com.centurylinklabs.watchtower.enable=true"
+
+  playwright:
+    image: ghcr.io/piroguetoolsuite/playwright-rest-api:main
+    restart: unless-stopped
     labels:
       - "com.centurylinklabs.watchtower.enable=true"
 
@@ -70,7 +78,7 @@ services:
       - xpack.security.enabled='false'
       - "ES_JAVA_OPTS=-Xms2048m -Xmx2048m"
     volumes:
-      - production_elasticsearch_data:/usr/share/elasticsearch/data
+      - /home/azureuser/vhs_data/elasticsearch_data:/usr/share/elasticsearch/data
 
   watchtower:
     image: containrrr/watchtower

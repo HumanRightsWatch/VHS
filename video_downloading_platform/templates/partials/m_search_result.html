@@ -18,7 +18,10 @@
             <span class="badge bg-opacity-75 bg-info">{{ result.source.status }}</span>
           {% endif %}
         </div>
-        {% if result.source.thumbnail_content_id %}
+        {% if result.source.post.title == "webpage_screenshot.png" %}
+          <img class="img-fluid rounded-start blurred-image img-thumbnail"
+               src="{% url "get_downloaded_content" result.id %}">
+        {% elif result.source.thumbnail_content_id %}
           <img class="img-fluid rounded-start blurred-image img-thumbnail"
                src="{% url "get_downloaded_content_thumbnail" content_id=result.source.thumbnail_content_id %}">
         {% else %}
