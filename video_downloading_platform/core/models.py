@@ -2,6 +2,7 @@ import logging
 import tempfile
 import uuid
 import os
+import re
 from datetime import timedelta
 import string
 import random
@@ -194,6 +195,7 @@ class Batch(models.Model):
         from elasticsearch import Elasticsearch
         es = Elasticsearch(settings.ELASTICSEARCH_HOSTS)
         try:
+            print(query)
             raw_results = es.search(index=self.get_es_index(), body=query)
             results = transform_hl_results(raw_results)
             return results
@@ -406,10 +408,16 @@ class DownloadRequest(models.Model):
             return []
 
     def start(self):
-        from video_downloading_platform.core.tasks import run_download_video_request, run_download_gallery_request
+        from video_downloading_platform.core.tasks import run_download_video_request, run_download_gallery_request, run_download_from_telegram
         self.status = DownloadRequest.Status.ENQUEUED
         self.save()
-        if self.type == DownloadRequest.VIDEO:
+
+        match = re.match(r"^https:\/\/t\.me\/(?P<user_id>.*?)\/(?P<post_id>[0-9]+)", self.url, re.IGNORECASE)
+
+        if match:
+            s_id = str(self.id)
+            async_task(run_download_from_telegram, s_id)
+        elif self.type == DownloadRequest.VIDEO:
             # run_download_video_request(self.id)
             s_id = str(self.id)
             async_task(run_download_video_request, s_id)
@@ -439,6 +447,7 @@ def _get_zip_upload_dir(instance, filename):
 def _get_request_types_to_run(url, request_type):
     suitable_for_ydl = False
     suitable_for_gdl = False
+    suitable_for_tdl = False
     if request_type == DownloadRequest.AUTOMATIC:
         # Suitable for Youtube DL?
         with tempfile.TemporaryDirectory() as tmp_dir:
@@ -452,8 +461,13 @@ def _get_request_types_to_run(url, request_type):
                     suitable_for_ydl = True
             except Exception:
                 suitable_for_ydl = False
+
         # Suitable for Gallery DL?
         suitable_for_gdl = gdl_find_extractors(url) is not None
+
+        # Suitable for Telegram downloader
+        match = re.match(r"^https:\/\/t\.me\/(?P<user_id>.*?)\/(?P<post_id>[0-9]+)", url, re.IGNORECASE)
+        suitable_for_tdl = bool(match)
     elif request_type == DownloadRequest.VIDEO:
         suitable_for_ydl = True
     elif request_type == DownloadRequest.GALLERY:
@@ -465,7 +479,10 @@ def _get_request_types_to_run(url, request_type):
     if suitable_for_gdl:
         request_types.append(DownloadRequest.GALLERY)
 
-    if not suitable_for_ydl and not suitable_for_gdl:
+    if suitable_for_tdl:
+        request_types = [DownloadRequest.VIDEO]
+
+    if not suitable_for_ydl and not suitable_for_gdl and not suitable_for_tdl:
         request_types.append(DownloadRequest.VIDEO)
         request_types.append(DownloadRequest.GALLERY)
 
@@ -736,6 +753,22 @@ class UploadRequest(models.Model):
             schedule_type=Schedule.ONCE,
             next_run=timezone.now() + timedelta(days=2)
         )
+
+
+class PlatformCredentials(models.Model):
+    id = models.UUIDField(
+        primary_key=True,
+        default=uuid.uuid4,
+        editable=False
+    )
+    name = models.CharField(
+        max_length=512,
+        unique=True
+    )
+    credentials = models.JSONField(
+        null=True,
+        blank=True
+    )
 
 def cleanup_upload_request(request_id):
     try:

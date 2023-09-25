@@ -1,7 +1,6 @@
 from datetime import datetime
 
-from elasticsearch_dsl import Document, Text, Keyword, Date, InnerDoc, Nested, Boolean, Object, \
-    Integer, Index
+from elasticsearch_dsl import Document, Text, Keyword, Date, InnerDoc, Boolean, Integer
 
 
 class User(InnerDoc):

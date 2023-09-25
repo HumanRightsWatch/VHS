@@ -26,19 +26,24 @@ django-cors-headers==3.10.0 # https://github.com/adamchainz/django-cors-headers
 # External libraries
 # ------------------------------------------------------------------------------
 #youtube-dl
-yt-dlp>=2022.6.29
-gallery-dl
+yt-dlp>=2023.07.06
+gallery-dl>=1.25.8
 PyExifTool
 psutil
 pygal
 cairosvg
 pillow
 python-magic
+telethon
+cryptg
+aiohttp
+opencv-python-headless
 
 # Indexing
 elasticsearch-dsl>=7.0.0,<8.0.0
 python-dateutil
 
+# Utils
 django-taggit==2.1.0
 django-markdownify==0.9.0
 django-tinymce==3.4.0

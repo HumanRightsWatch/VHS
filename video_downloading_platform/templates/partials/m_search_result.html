@@ -21,6 +21,9 @@
         {% if result.source.post.title == "webpage_screenshot.png" %}
           <img class="img-fluid rounded-start blurred-image img-thumbnail"
                src="{% url "get_downloaded_content" result.id %}">
+        {% elif "image" in result.source.mimetype %}
+          <img class="img-fluid rounded-start blurred-image img-thumbnail"
+               src="{% url "get_downloaded_content" result.id %}">
         {% elif result.source.thumbnail_content_id %}
           <img class="img-fluid rounded-start blurred-image img-thumbnail"
                src="{% url "get_downloaded_content_thumbnail" content_id=result.source.thumbnail_content_id %}">
@@ -31,9 +34,9 @@
       <div class="col-md-8 text-truncate border-end border-secondary">
         <div class="border-bottom border-secondary text-break pb-1">
           <div class="font-monospace text-primary text-wrap">
-            {% if result.source.type == "video" %}
+            {% if "video" in result.source.mimetype %}
               <i class="fa fa-video"></i>
-            {% elif result.source.type == "gallery" %}
+            {% elif "image" in result.source.mimetype %}
               <i class="fa fa-picture-o"></i>
             {% endif %}
             {% if result.source.post.title %}

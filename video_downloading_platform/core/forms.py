@@ -151,5 +151,5 @@ class SearchForm(forms.Form):
             raw_results = es.search(index=indexes, body=query)
             results = transform_hl_results(raw_results)
             return results
-        except Exception as e:
+        except Exception:
             return []

@@ -4,7 +4,7 @@ from video_downloading_platform.core.models import (
     Batch,
     DownloadRequest,
     DownloadReport,
-    DownloadedContent, UploadRequest
+    DownloadedContent, UploadRequest, PlatformCredentials
 )
 
 
@@ -41,3 +41,10 @@ class UploadRequestAdmin(admin.ModelAdmin):
 
 
 admin.site.register(UploadRequest, UploadRequestAdmin)
+
+
+class PlatformCredentialsAdmin(admin.ModelAdmin):
+    list_display = ('name',)
+
+
+admin.site.register(PlatformCredentials, PlatformCredentialsAdmin)

@@ -24,8 +24,8 @@ from video_downloading_platform.core.forms import BatchForm, BatchRequestForm, U
     DownloadRequestLightForm, SearchForm
 from video_downloading_platform.core.models import Batch, DownloadRequest, DownloadedContent, DownloadReport, \
     _get_request_types_to_run, BatchTeam
-from video_downloading_platform.core.tasks import compute_downloaded_content_metadata, index_download_request_by_id, \
-    index_collection_by_id, index_download_request
+from video_downloading_platform.core.tasks import compute_downloaded_content_metadata, index_collection_by_id, \
+    index_download_request
 from video_downloading_platform.users.admin import User
 
 
@@ -86,7 +86,8 @@ def handle_file_upload(request, upload_form, batch):
                     description='Your files have been successfully uploaded',
                     public=False,
                     actions=actions)
-        transaction.on_commit(lambda: async_task(compute_downloaded_content_metadata, downloaded_content.id, download_request.id, True))
+        transaction.on_commit(
+            lambda: async_task(compute_downloaded_content_metadata, downloaded_content.id, download_request.id, True))
     except Exception as e:
         print(e)
         download_report.in_error = True
@@ -581,6 +582,7 @@ def get_thumbnail_view(request, request_id):
     if report:
         return report.get_thumbnail()
     return None
+
 
 @login_required
 def statistics_view(request):

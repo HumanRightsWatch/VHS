@@ -1,22 +1,20 @@
 import glob
+import hashlib
 import json
-from urllib.parse import urlparse
+import logging
 import tempfile
 import traceback
 import zipfile
 from os import path
-import logging
-import hashlib
+from tempfile import NamedTemporaryFile
+from urllib.parse import urlparse
 from zipfile import ZipFile
 
-import magic
-from tempfile import NamedTemporaryFile
-
-import requests
-from dateutil.parser import parse
-
 import exiftool
+import magic
+import requests
 import yt_dlp as youtube_dl
+from dateutil.parser import parse
 from django.core.files import File
 from django.urls import reverse_lazy
 from elasticsearch_dsl import Index
@@ -26,10 +24,11 @@ from video_downloading_platform.core.indexing import Entity
 from video_downloading_platform.core.models import (
     DownloadRequest,
     DownloadReport,
-    DownloadedContent, Batch,
+    DownloadedContent, Batch, PlatformCredentials,
 )
 
 logger = logging.getLogger(__name__)
+
 
 def hash_file(filename):
     if path.isfile(filename) is False:
@@ -59,10 +58,24 @@ def hash_file(filename):
 
 
 def _get_file_metadata(directory, filename):
-    if filename.endswith('.json') or filename.endswith('.description') or not filename:
+    if not filename:
         return {}
+    if 'webpage_screenshot.png' in filename:
+        return {}
+    if filename.endswith('.json') or filename.endswith('.description'):
+        return {}
+
     filename_without_extension = ''.join(filename.split('.')[:-1])
 
+    # Check if post.json exists, if so, load it
+    try:
+        with open(f'{directory}/post.json', mode='r') as json_file:
+            metadata = json.load(json_file)
+            return metadata
+    except Exception as e:
+        logger.error(e)
+
+    # Fuzzy search otherwise
     for f in glob.glob(f'{directory}/{filename_without_extension}*.json', recursive=True):
         try:
             with open(f, mode='r') as json_file:
@@ -74,6 +87,13 @@ def _get_file_metadata(directory, filename):
 
 
 def _get_exif_data_for_file(file_path):
+    if not file_path:
+        return {}
+    if 'webpage_screenshot.png' in file_path:
+        return {}
+    if file_path.endswith('.json') or file_path.endswith('.description'):
+        return {}
+
     try:
         with exiftool.ExifToolHelper() as et:
             metadata = et.get_metadata(file_path)[0]
@@ -81,6 +101,7 @@ def _get_exif_data_for_file(file_path):
     except Exception as e:
         logger.error(e)
     return {}
+
 
 def compute_downloaded_content_metadata(downloaded_content_id, download_request_id, create_archive=False):
     logger.info(f'Compute downloaded content metadata {downloaded_content_id}')
@@ -130,13 +151,11 @@ def _manage_downloaded_files(directory, owner, download_report, cw, request_type
             mime_prefix = 'video'
         elif request_type == DownloadRequest.GALLERY:
             mime_prefix = 'image'
-        metadata = {}
-        exif_data = {}
         is_target = False
-        if mime_type.startswith(mime_prefix):
+        if mime_type.startswith(mime_prefix) and 'thumbnail' not in cleaned_name:
             is_target = True
-            metadata = _get_file_metadata(directory, cleaned_name)
-            exif_data = _get_exif_data_for_file(downloaded_file)
+        metadata = _get_file_metadata(directory, cleaned_name)
+        exif_data = _get_exif_data_for_file(downloaded_file)
         downloaded_content = DownloadedContent(
             download_report=download_report,
             owner=owner,
@@ -169,6 +188,7 @@ def take_url_screenshot(url, output_dir):
                     with open(f'{output_dir}/webpage_screenshot.png', mode='wb') as s:
                         s.write(screenshot_file.read())
 
+
 def run_download_video_request(download_request_id):
     download_request = DownloadRequest.objects.get(id=download_request_id)
     download_request.status = DownloadRequest.Status.PROCESSING
@@ -182,13 +202,14 @@ def run_download_video_request(download_request_id):
     try:
         with tempfile.TemporaryDirectory() as tmp_dir:
             options = {
-                'outtmpl': f'{tmp_dir}/%(id)s.%(ext)s',
+                'outtmpl': f'{tmp_dir}/%(id)s-%(autonumber)s.%(ext)s',
                 'format': 'best',
                 'writedescription': True,
                 'writeinfojson': True,
                 'writeannotations': True,
                 'writethumbnail': True,
                 'noplaylist': False,
+                'overwrites': False,
             }
             with youtube_dl.YoutubeDL(options) as ydl:
                 print('downloading video', download_request.url)
@@ -241,7 +262,7 @@ def run_download_video_request(download_request_id):
 
 def run_download_gallery_request(download_request_id):
     from gallery_dl import config, job
-    config.set((), "filename", "{id}.{extension}")
+    config.set((), "filename", "{id}-{num}.{extension}")
     config.set((), "directory", "")
     config.set(
         ('extractor',),
@@ -266,6 +287,87 @@ def run_download_gallery_request(download_request_id):
         with tempfile.TemporaryDirectory() as tmp_dir:
             config.set((), "base-directory", tmp_dir)
             job.DownloadJob(download_request.url).run()
+
+            # Take URL screenshot
+            take_url_screenshot(download_request.url, tmp_dir)
+
+            _manage_downloaded_files(tmp_dir, owner, download_report, download_request.content_warning,
+                                     download_request.type)
+
+            download_request.status = DownloadRequest.Status.SUCCEEDED
+            download_request.save()
+
+            create_zip_archive(download_report.id)
+            index_download_request(download_request)
+
+            actions = [
+                {
+                    'url': reverse_lazy('batch_details', args=[download_request.batch.id]) + '#' + str(
+                        download_request.id),
+                    'title': 'View files'}
+            ]
+            notify.send(owner, recipient=owner, verb='',
+                        description='Your files have been successfully downloaded',
+                        public=False,
+                        actions=actions)
+    except Exception as e:
+        logger.error(e)
+        download_report.in_error = True
+        error_message = download_report.error_message
+        if not error_message:
+            error_message = ''
+        error_message += '\n' + traceback.format_exc()
+        download_report.error_message = error_message
+        download_report.save()
+        download_request.status = DownloadRequest.Status.FAILED
+        download_request.save()
+        actions = [
+            {
+                'url': reverse_lazy('batch_details', args=[download_request.batch.id]) + '#' + str(download_request.id),
+                'title': 'View details'}
+        ]
+        notify.send(owner, recipient=owner, verb='',
+                    level='error',
+                    description='Your request has failed',
+                    public=False,
+                    actions=actions)
+
+
+def run_download_from_telegram(download_request_id):
+    from video_downloading_platform.core.telegram import TelegramPostDownloader
+    download_request = DownloadRequest.objects.get(id=download_request_id)
+    download_request.status = DownloadRequest.Status.PROCESSING
+    download_request.save()
+    owner = download_request.owner
+    download_report = DownloadReport(
+        download_request=download_request,
+        owner=owner
+    )
+    download_report.save()
+    try:
+        with tempfile.TemporaryDirectory() as tmp_dir:
+            # Get credentials from DB
+            try:
+                credentials_obj = PlatformCredentials.objects.get(name='telegram')
+            except PlatformCredentials.DoesNotExist:
+                raise Exception('No credentials found for Telegram')
+
+            creds = credentials_obj.credentials
+
+            if 'api_id' not in creds or 'api_hash' not in creds or 'bot_token' not in creds:
+                raise Exception('Telegram credentials [telegram] not correctly configured. Expect api_id, api_hash and bot_token properties')
+
+            # Download from Telegram
+            tg_downloader = TelegramPostDownloader(
+                creds.get('api_id'),
+                creds.get('api_hash'),
+                creds.get('bot_token'),
+            )
+            tg_downloader.login()
+            if not tg_downloader.prepare(download_request.url):
+                raise Exception('Not a valid Telegram URL. Have to match, to be like https://t.me/<user>/<id>.')
+
+            tg_downloader.download(tmp_dir)
 
             # Take URL screenshot
             take_url_screenshot(download_request.url, tmp_dir)
@@ -396,8 +498,12 @@ def __parse_exif(exif):
 def get_in_dict(keys, obj, default=''):
     for k in keys:
         if k in obj:
-            return obj.get(k)
+            val = obj.get(k)
+            if not val or val == 'none':
+                return default
+            return val
     return default
+
 
 def index_download_request(request: DownloadRequest):
     from elasticsearch_dsl import connections
@@ -442,40 +548,60 @@ def index_download_request(request: DownloadRequest):
             entity.exif = '\n'.join([f'{k}: {v}' for k, v in __parse_exif(content.exif_data).items()])
             entity.content_warning = request.content_warning
 
-            if request.type == DownloadRequest.VIDEO:
-                entity.type = DownloadRequest.VIDEO.lower()
+            if request.type == DownloadRequest.VIDEO or request.type == DownloadRequest.GALLERY:
+                entity.type = request.type.lower()
                 entity.stats = {
-                    'view_count': content.metadata.get('view_count', -1),
-                    'like_count': content.metadata.get('like_count', -1),
-                    'comment_count': content.metadata.get('comment_count', -1),
+                    'view_count': get_in_dict([
+                        'views',
+                        'view_count',
+                    ], content.metadata, -1),
+                    'like_count': get_in_dict([
+                        'reactions',
+                        'like_count',
+                        'fav_count',
+                        'favourites_count',
+                        'favorite_count'
+                    ],  content.metadata, -1),
+                    'comment_count': get_in_dict([
+                        'replies',
+                        'comment_count',
+                        'replies_count',
+                        'reply_count'
+                    ], content.metadata, -1),
                 }
                 entity.post = {
-                    'uploader': content.metadata.get('uploader', ''),
-                    'uploader_url': content.metadata.get('uploader_url', ''),
-                    'uploader_id': str(content.metadata.get('uploader_id', '')),
-                    'title': content.metadata.get('title', content.name),
-                    'description': content.metadata.get('fulltitle', ''),
-                    'upload_date': __try_recovering_date(content.metadata.get('upload_date', '1970-01-01')),
+                    'uploader': get_in_dict([
+                        'uploader',
+                    ], content.metadata),
+                    'uploader_url': get_in_dict([
+                        'uploader_url',
+                    ], content.metadata),
+                    'uploader_id': str(get_in_dict([
+                        'uploader_id',
+                    ], content.metadata, '-1'), ),
+                    'title': get_in_dict([
+                        'title',
+                    ], content.metadata, content.name),
+                    'description': get_in_dict([
+                        'message',
+                        'fulltitle',
+                        'description',
+                        'content',
+                        'tag_string',
+                    ], content.metadata),
+                    'upload_date': __try_recovering_date(get_in_dict([
+                        'date',
+                        'edit_date',
+                        'created_at',
+                    ], content.metadata, '1970-01-01')),
                 }
-                entity.webpage_url = content.metadata.get('webpage_url', '')
-                entity.platform = content.metadata.get('extractor_key', '')
-
-            elif request.type == DownloadRequest.GALLERY:
-                entity.type = DownloadRequest.GALLERY.lower()
-                entity.platform = urlparse(request.url).netloc
-                entity.stats = {
-                    'view_count': get_in_dict(['view_count'], content.metadata, -1),
-                    'like_count': get_in_dict(['like_count', 'fav_count', 'favourites_count', 'favorite_count'], content.metadata, -1),
-                    'comment_count': get_in_dict(['comment_count', 'replies_count', 'reply_count'], content.metadata, -1),
-                }
-                entity.post = {
-                    'uploader': content.metadata.get('uploader', ''),
-                    'uploader_url': content.metadata.get('uploader_url', ''),
-                    'uploader_id': str(get_in_dict(['uploader_id'], content.metadata, -1),),
-                    'title': content.metadata.get('title', content.name),
-                    'description': get_in_dict(['fulltitle', 'description', 'content', 'tag_string'], content.metadata),
-                    'upload_date': __try_recovering_date(get_in_dict(['date', 'created_at'], content.metadata, '1970-01-01')),
-                }
+                entity.webpage_url = get_in_dict([
+                    'webpage_url',
+                ], content.metadata)
+                entity.platform = get_in_dict([
+                    'extractor_key',
+                    'platform',
+                ], content.metadata, urlparse(request.url).netloc)
 
             if request.url == 'http://dummy.url.local':
                 entity.origin = 'User upload'
@@ -490,11 +616,13 @@ def index_download_request(request: DownloadRequest):
     request.batch.indexed = True
     request.batch.save()
 
+
 def index_download_request_by_id(request_id: str):
     request: DownloadRequest = DownloadRequest.objects.get(id=request_id)
     if not request:
         return
     index_download_request(request)
+
 
 def index_collection_by_id(batch_id: str):
     batch: Batch = Batch.objects.get(id=batch_id)
