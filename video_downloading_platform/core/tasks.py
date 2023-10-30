@@ -544,7 +544,7 @@ def index_download_request(request: DownloadRequest):
             entity.md5 = content.md5
             entity.sha256 = content.sha256
             entity.status = request.get_status_display()
-            entity.thumbnail_content_id = report.get_thumbnail_id()
+            entity.thumbnail_content_id = report.get_thumbnail_id_for(content.name)
             entity.exif = '\n'.join([f'{k}: {v}' for k, v in __parse_exif(content.exif_data).items()])
             entity.content_warning = request.content_warning
 

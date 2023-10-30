@@ -581,6 +581,23 @@ class DownloadReport(models.Model):
             print(e)
         return None
 
+    def get_thumbnail_id_for(self, content_name):
+        print(f'Search for the thumbnail of {content_name}')
+        name = ''.join(content_name.split('.')[:-1])
+        try:
+            for c in self.downloadedcontent_set.filter(mime_type__in=['image/jpeg', 'image/png', 'image/webp'], name__icontains=name).all():
+                print(f'  found {c.name}')
+                return c.id
+        except Exception:
+            pass
+        try:
+            content = self.downloadedcontent_set.filter(mime_type__in=['image/jpeg', 'image/png', 'image/webp']).exclude(name='webpage_screenshot.png').first()
+            if content:
+                return content.id
+        except Exception as e:
+            print(e)
+        return None
+
 
 def _get_upload_dir(instance, filename):
     owner_id = instance.owner.id
