@@ -9,7 +9,7 @@ from video_downloading_platform.core.models import (
 
 
 class BatchAdmin(admin.ModelAdmin):
-    list_display = ('name', 'created_at')
+    list_display = ('name', 'owner', 'created_at', 'updated_at', 'url_count')
 
 
 admin.site.register(Batch, BatchAdmin)

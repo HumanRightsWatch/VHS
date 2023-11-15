@@ -630,3 +630,13 @@ def index_collection_by_id(batch_id: str):
         return
     for dr in batch.download_requests.all():
         index_download_request(dr)
+
+
+def delete_collection_by_id(batch_id: str):
+    batch: Batch = Batch.objects.get(id=batch_id)
+    if not batch:
+        return
+    try:
+        batch.delete()
+    except Exception as e:
+        logger.error(e)

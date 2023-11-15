@@ -25,7 +25,7 @@ from video_downloading_platform.core.forms import BatchForm, BatchRequestForm, U
 from video_downloading_platform.core.models import Batch, DownloadRequest, DownloadedContent, DownloadReport, \
     _get_request_types_to_run, BatchTeam
 from video_downloading_platform.core.tasks import compute_downloaded_content_metadata, index_collection_by_id, \
-    index_download_request
+    index_download_request, delete_collection_by_id
 from video_downloading_platform.users.admin import User
 
 
@@ -251,6 +251,20 @@ def reopen_batch_view(request, batch_id):
         batch = Batch.objects.get(id=batch_id)
         batch.reopen()
         messages.success(request, _(f'Your batch {batch.name} have been closed.'))
+    return redirect(request.META.get('HTTP_REFERER'))
+
+
+@login_required
+def delete_batch_view(request, batch_id):
+    user = request.user
+    if not user.is_authenticated:
+        return redirect(reverse_lazy(settings.LOGIN_URL))
+    if batch_id:
+        batch = Batch.objects.get(id=batch_id)
+        batch.status = Batch.ARCHIVED
+        batch.save()
+        async_task(delete_collection_by_id, batch_id)
+        messages.success(request, _(f'The deletion of the collection {batch.name} is processing.'))
     return redirect(request.META.get('HTTP_REFERER'))
 
 

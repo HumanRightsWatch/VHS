@@ -19,6 +19,7 @@ from django.utils.translation import gettext_lazy as _
 from django_q.humanhash import HumanHasher
 from django_q.models import Schedule
 from django_q.tasks import async_task, schedule
+from elasticsearch_dsl import Index
 from gallery_dl.extractor import find as gdl_find_extractors
 from taggit.managers import TaggableManager
 from taggit.models import GenericUUIDTaggedItemBase, TaggedItemBase
@@ -291,6 +292,10 @@ class Batch(models.Model):
             return 'primary'
         if self.status == Batch.ARCHIVED:
             return 'secondary'
+
+    @property
+    def url_count(self):
+        return self.download_requests.count()
 
     def __str__(self):
         return self.name
@@ -792,18 +797,39 @@ def cleanup_upload_request(request_id):
         upload_request = UploadRequest.objects.get(id=request_id)
         upload_request.cleanup()
     except Exception as e:
-        print(e)
+        logger.error(e)
 
 
 @receiver(pre_delete, sender=DownloadedContent, dispatch_uid='delete_stored_file')
 def delete_downloaded_content_stored_files(sender, instance: DownloadedContent, using, **kwargs):
-    instance.content.delete()
+    print(f'Delete downloaded content [{instance.owner}] {instance.id}')
+    try:
+        instance.content.delete()
+    except Exception as e:
+        logger.error(e)
 
 
 @receiver(pre_delete, sender=DownloadReport, dispatch_uid='delete_stored_archive_file')
 def delete_download_report_stored_files(sender, instance: DownloadReport, using, **kwargs):
-    instance.archive.delete()
+    print(f'Delete the archive [{instance.owner}] {instance.id}')
+    try:
+        instance.archive.delete()
+    except Exception as e:
+        logger.error(e)
 
+
+@receiver(pre_delete, sender=DownloadRequest, dispatch_uid='delete_stored_archive_file')
+def delete_download_request(sender, instance: DownloadRequest, using, **kwargs):
+    print(f'Delete the download request [{instance.owner}] {instance.id}')
+    from elasticsearch_dsl import connections
+    connections.create_connection(hosts=['elasticsearch'], timeout=20)
+    index_name = instance.get_es_index()
+    try:
+        index = Index(index_name)
+        if index.exists():
+            index.delete()
+    except Exception as e:
+        logger.error(e)
 
 @receiver(pre_delete, sender=UploadRequest, dispatch_uid='delete_upload_request_file')
 def delete_upload_request_stored_files(sender, instance: UploadRequest, using, **kwargs):

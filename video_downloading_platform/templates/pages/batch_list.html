@@ -25,19 +25,71 @@
         {% for batch in batches %}
           <tr class="table-{{ batch.status_class }}">
             <td>{{ batch.download_requests.count }}</td>
-            <td>{{ batch.name }}</td>
+            <td>
+              {{ batch.name }}<br>
+              <span class="font-monospace small text-muted">ID: {{ batch.id }}</span>
+            </td>
             <td><i class="fa fa-user" aria-hidden="true"></i> {{ batch.owner }}</td>
             <td>
               <span class="badge bg-{{ batch.status_class }}">
                 {{ batch.status }}
               </span>
             </td>
-            <td><i class="fa fa-clock-o" aria-hidden="true"></i> {{ batch.created_at }}</td>
-            <td><i class="fa fa-clock-o" aria-hidden="true"></i> {{ batch.updated_at }}</td>
+            <td>
+              <i class="fa fa-clock-o" aria-hidden="true"></i> {{ batch.created_at }}<br>
+              <span class="text-muted">{{ batch.created_at|timesince }} ago</span>
+            </td>
+            <td>
+              <i class="fa fa-clock-o" aria-hidden="true"></i> {{ batch.updated_at }}<br>
+              <span class="text-muted">{{ batch.updated_at|timesince }} ago</span>
+            </td>
             <td>
               <a href="{% url 'batch_details' batch.id %}" class="btn btn-sm btn-primary" role="button">
                 <i class="fa fa-search" aria-hidden="true"></i> {% translate "Details" %}
               </a>
+              {% if request.user.is_superuser %}
+                <button type="button" class="btn btn-sm btn-danger" data-bs-toggle="modal"
+                        data-bs-target="#modal-{{ batch.id }}">
+                  <i class="fa fa-trash-o"></i>
+                  Delete
+                </button>
+                <div class="modal fade" id="modal-{{ batch.id }}" tabindex="-1"
+                     aria-labelledby="modal-label-{{ batch.id }}" aria-hidden="true">
+                  <div class="modal-dialog modal-dialog-scrollable modal-lg">
+                    <div class="modal-content">
+                      <div class="modal-header">
+                        <h1 class="modal-title fs-5" id="modal-label-{{ batch.id }}">
+                          Delete the collection {{ batch.name }}
+                        </h1>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                      </div>
+                      <div class="modal-body">
+                        <p>
+                          You are about to entirely delete the collection named "<i>{{ batch.name }}</i>".
+                          This operation will be processed in background since it could take several minutes
+                          to be completed. This operation cannot be cancelled nor reverted.
+                        </p>
+                        <p>
+                          This collection contains the following URLs:
+                        </p>
+                        <ul>
+                          {% for u in batch.download_requests.all %}
+                            <li class="font-monospace">{{ u.url }}</li>
+                          {% empty %}
+                            <li>Nothing</li>
+                          {% endfor %}
+                        </ul>
+                      </div>
+                      <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                        <a href="{% url 'delete_batch' batch.id %}" class="btn btn-primary" role="button">
+                          <i class="fa fa-trash-o" aria-hidden="true"></i> {% translate "Delete" %}
+                        </a>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              {% endif %}
             </td>
           </tr>
         {% endfor %}

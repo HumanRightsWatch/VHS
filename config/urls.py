@@ -21,7 +21,7 @@ from video_downloading_platform.core.views import (
     reopen_batch_view, BatchTeamUpdateView, download_collection_zip_view,
     hide_download_request_view, show_download_request_view, mark_all_notification_read_view, batch_edit_view,
     edit_download_request_view, statistics_view, add_content_to_batch_view, search_view,
-    get_downloaded_content_thumbnail, download_request_details_view, force_download_content_view,
+    get_downloaded_content_thumbnail, download_request_details_view, force_download_content_view, delete_batch_view,
 )
 
 urlpatterns = [
@@ -49,6 +49,7 @@ urlpatterns = [
   path("batch/<str:batch_id>/close", close_batch_view, name="close_batch"),
   path("batch/<str:batch_id>/reopen", reopen_batch_view, name="reopen_batch"),
   path("batch/<str:batch_id>/archive", archive_batch_view, name="archive_batch"),
+  path("batch/<str:batch_id>/delete", delete_batch_view, name="delete_batch"),
   path("batch/<str:batch_id>/download", download_collection_zip_view, name="download_batch_archive"),
   path("batch/<str:batch_id>/details", batch_details_view, name="batch_details"),
   path("batch/<str:batch_id>/edit", batch_edit_view, name="batch_edit"),
