@@ -249,7 +249,8 @@ class Batch(models.Model):
         teams = BatchTeam.get_my_teams_as_contrib(user).all()
         for team in teams:
             batch = team.batch.first()
-            _batches.append(batch.id)
+            if batch:
+                _batches.append(batch.id)
         _batches.extend([b.id for b in Batch._get_users_batches(user, Batch.OPEN).all()])
         return Batch.objects.filter(id__in=_batches)
 
@@ -275,7 +276,7 @@ class Batch(models.Model):
                 teams = BatchTeam.get_my_teams_as_contrib(user).all()
                 for team in teams:
                     batch = team.batch.first()
-                    if batch.status == status:
+                    if batch and batch.status == status:
                         _batches.append(batch.id)
                 _batches.extend([b.id for b in Batch.objects.filter(owner=user, status=status).all()])
                 _batches = list(set(_batches))
