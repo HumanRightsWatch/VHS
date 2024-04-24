@@ -3,7 +3,7 @@ Here is a step-by-step guide explaining how to deploy VHS on Microsoft Azure.
 
 This guide assumes the following:
 
-* you already have a Linux virtual machine up and running within Azure
+* you already have a **Debian-based virtual machine** up and running within Azure
 * you can access it with SSH
 * Docker and docker-compose are installed on your VM
 * you have basic knowledge in Linux command line and Docker
@@ -74,3 +74,8 @@ VHS will be automatically updated on a daily basis.
 
 ## Configure the SSO
 At its first start, VHS creates an administrator user account with the password you specified earlier. First, connect to the administration panel by browsing `https://{DJANGO_ALLOWED_HOSTS}/{DJANGO_ADMIN_URL}` (username = `admin`). Next, click on *Social apps* > *Add a social app*, select *Microsoft Graph* in the provider list and fill the fields *Client ID* and *Secret key* with the information provided by your Azure administrator.
+
+## Update VHS
+VHS official Docker image is available [on GitHub](https://github.com/HumanRightsWatch/VHS/pkgs/container/vhs). The Docker stack with the service [Watchtower](https://containrrr.dev/watchtower/) that will automatically update VHS. By default, Watchtower is configured to update VHS on daily basis.
+
+Regarding the host operating system (the OS running on the VM), please refer to the [Guide to Updating Debian from the Terminal](https://thelinuxcode.com/update-debian-from-terminal/).
