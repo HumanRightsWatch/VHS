@@ -78,4 +78,10 @@ At its first start, VHS creates an administrator user account with the password 
 ## Update VHS
 VHS official Docker image is available [on GitHub](https://github.com/HumanRightsWatch/VHS/pkgs/container/vhs). The Docker stack comes with the service [Watchtower](https://containrrr.dev/watchtower/) that will automatically update VHS. By default, Watchtower is configured to update VHS on a daily basis.
 
+To update the Docker image of a specific service, you can run the following command:
+```
+docker-compose -f azure.yml pull [name of the service]
+```
+Replace `[name of the service]` with `django` if you want to manually upgrade VHS.
+
 Regarding the host operating system (the OS running on the VM), please refer to the [Guide to Updating Debian from the Terminal](https://thelinuxcode.com/update-debian-from-terminal/).
